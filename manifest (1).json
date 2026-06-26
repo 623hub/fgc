@@ -1,0 +1,26 @@
+{
+  "name": "623Hub",
+  "short_name": "623Hub",
+  "description": "一站追蹤台灣格鬥遊戲賽事與直播資訊",
+  "start_url": "/fonet/",
+  "scope": "/fonet/",
+  "display": "standalone",
+  "background_color": "#0B1020",
+  "theme_color": "#0B1020",
+  "orientation": "portrait",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
