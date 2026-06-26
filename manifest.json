@@ -1,7 +1,7 @@
 {
   "name": "623Hub",
   "short_name": "623Hub",
-  "description": "一站追蹤台灣格鬥遊戲賽事與直播資訊",
+  "description": "一站追蹤台灣格鬥遊戲比賽與直播資訊",
   "start_url": "/fonet/",
   "scope": "/fonet/",
   "display": "standalone",
