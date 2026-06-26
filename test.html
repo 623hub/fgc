@@ -1,0 +1,3361 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>623Hub — 台灣格鬥遊戲比賽與直播資訊整理</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="623Hub">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #0B1020;
+    --bg2: #131829;
+    --card: #1C2236;
+    --card2: #222840;
+    --accent: #A855F7;
+    --accent-dim: rgba(168,85,247,0.12);
+    --accent-dim2: rgba(168,85,247,0.06);
+    --text: #FFFFFF;
+    --text2: #A0A8C0;
+    --text3: #a0a6bc;
+    --live-red: #FF4444;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --header-h: 56px;
+    --nav-h: 60px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ── Page switcher (hidden) ── */
+  .switcher { display: none; }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--bg);
+    position: relative;
+    margin-top: 0;
+    overflow: hidden;
+  }
+
+  /* ── Pages ── */
+  .page {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    padding-bottom: var(--nav-h);
+    position: relative;
+  }
+  .page.active { display: flex; }
+
+  /* ── Header ── */
+  header {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    background: var(--bg);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: transform 0.28s ease, opacity 0.28s ease;
+  }
+  header.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .logo-wrap { display: flex; flex-direction: column; line-height: 1.1; }
+  .logo-tagline {
+    font-size: 13px;
+    color: var(--text1);
+    letter-spacing: 0.01em;
+    margin-top: 2px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .icon-btn {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text2);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 480px;
+    height: var(--nav-h);
+    background: var(--bg2);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 8px 0;
+    color: var(--text3);
+    font-size: 11px;
+    transition: color 0.15s;
+    border: none;
+    background: none;
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+
+  /* ── Scrollable content ── */
+  .content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-top: var(--header-h); padding-bottom: calc(var(--nav-h) + 16px); margin-top: 0; }
+
+  /* ── Section header ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 20px 18px 10px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 18px 10px;
+  }
+  .section-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .more-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .tag-live {
+    background: rgba(255,68,68,0.15);
+    color: var(--live-red);
+    border: 1px solid rgba(255,68,68,0.3);
+  }
+  .tag-tw {
+    background: rgba(168,85,247,0.2);
+    color: #C084FC;
+    border: 1px solid rgba(168,85,247,0.5);
+    font-weight: 700;
+  }
+  .tag-game {
+    background: var(--card2);
+    color: var(--text2);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .tag-weekly {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── Event card ── */
+  .event-card {
+    margin: 0 18px 8px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    border: 1px solid rgba(255,255,255,0.04);
+    position: relative;
+  }
+  .event-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .event-card-left { flex: 1; min-width: 0; }
+  .event-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+  .event-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    line-height: 1.25;
+  }
+  .event-date {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .event-desc {
+    font-size: 13px;
+    color: var(--text3);
+    margin-top: 6px;
+    width: 100%;
+  }
+  .btn-schedule {
+    padding: 7px 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+  /* detail-link moved to expand section */
+
+  /* ── Live card (list style) ── */
+  .live-card {
+    margin: 0 18px 8px;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    gap: 0;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .live-card:hover { border-color: rgba(25,247,226,0.2); }
+  .live-thumb {
+    width: 110px;
+    height: 72px;
+    background: var(--card2);
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .live-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .live-thumb-placeholder {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a2240, #2a3460);
+  }
+  .live-dot {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: var(--live-red);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .live-info {
+    flex: 1;
+    padding: 10px 14px;
+    min-width: 0;
+  }
+  .live-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .live-card-title {
+    font-size: 15px;
+    color: var(--text2);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.75;
+  }
+  .live-game {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .live-platform {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .live-avatar {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--card2);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .live-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    padding: 0 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 4px;
+  }
+  .tab {
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Game filter chips ── */
+  .filter-chips {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .chip.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── HOMEPAGE ── */
+
+  /* Hero */
+  .hero-container {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .hero-container.ready {
+    opacity: 1;
+  }
+
+  /* ── Hero peek carousel ── */
+  .hero-track-wrap {
+    overflow: hidden;
+    padding: 12px 0 0;
+  }
+  .hero-track {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    padding: 0 7.5%;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+    touch-action: pan-y;
+  }
+  .hero-slide {
+    flex: 0 0 85%;
+    min-width: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--card);
+    opacity: 0.5;
+    transform: scale(0.97);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .hero-slide.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .hero-slide .tabs {
+    padding: 0 12px;
+    margin: 0;
+  }
+  .hero-slide .hero {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .hero {
+    position: relative;
+    margin: 12px 18px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--card);
+  }
+  .hero-img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #1a2240 0%, #0d1830 50%, #1a2840 100%);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  /* ── 遊戲宣傳圖輪播（沒有賽事時的 Hero 替代）── */
+  .game-art-carousel {
+    margin: 12px 18px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16/6.5; /* 比原本稍高 */
+    background: var(--card);
+  }
+  .game-art-slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    background-size: cover;
+    background-position: center;
+  }
+  .game-art-slide.active { display: block; }
+  .game-art-slide-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(11,16,32,0.85) 0%, rgba(11,16,32,0.15) 60%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 12px 16px;
+  }
+  .game-art-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(11,16,32,0.95) 0%, rgba(11,16,32,0.3) 50%, transparent 100%);
+  }
+  .hero-content {
+    position: relative;
+    padding: 14px 16px;
+    width: 100%;
+  }
+  .hero-event-name {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .hero-sub {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  /* Hero 頻道資訊列（頭貼 + 頻道名 + 觀賽中） */
+  .hero-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    gap: 10px;
+  }
+  .hero-streamer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .hero-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.25);
+    flex-shrink: 0;
+  }
+  .hero-streamer-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .hero-watching-label {
+    font-size: 11px;
+    color: var(--text3);
+    margin-left: 2px;
+  }
+  /* 需要轉播權時縮小 hero-img 高度 */
+  .hero-img.compact {
+    aspect-ratio: 16/6;
+  }
+  .hero-live-badge {
+    background: var(--live-red);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+  }
+  .hero-cta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .btn-primary {
+    padding: 8px 18px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .btn-ghost {
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Hero placeholder art */
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.18;
+    font-size: 72px;
+    letter-spacing: -4px;
+    font-weight: 900;
+    color: var(--accent);
+    user-select: none;
+  }
+
+  /* Horizontal live scroll */
+  .live-scroll {
+    display: flex;
+    gap: 10px;
+    padding: 0 18px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .live-scroll::-webkit-scrollbar { display: none; }
+  .live-scroll-card {
+    flex-shrink: 0;
+    width: 130px;
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .live-scroll-card:hover { border-color: rgba(25,247,226,0.2); }
+  .live-scroll-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #1a2240, #2a3460);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: rgba(255,255,255,0.15);
+  }
+  .live-scroll-info {
+    padding: 8px 10px;
+  }
+  .live-scroll-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .live-scroll-game {
+    font-size: 10px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  /* Banner */
+  .banner {
+    margin: 24px 18px 8px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: linear-gradient(135deg, #252d45);
+    border: 1px solid rgba(25,247,226,0.8);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .banner-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .banner-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
+  .banner-btn {
+    padding: 7px 14px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Banner carousel ── */
+  .banner-carousel {
+    margin: 24px 18px 8px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+  }
+  .banner-slide {
+    display: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .banner-slide.active { display: block; }
+  /* 有圖片的 banner */
+  .banner-slide-img {
+    width: 100%;
+    aspect-ratio: 3/1;
+    object-fit: cover;
+    display: block;
+  }
+  /* 無圖片的 banner（文字版）*/
+  .banner-slide-text {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #252040);
+    border: 1px solid rgba(168,85,247,0.8);
+    border-radius: var(--radius);
+  }
+  .banner-slide-body {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .banner-slide-body strong {
+    color: var(--text);
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  /* 分頁點點 */
+  .banner-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .banner-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.2s, width 0.2s;
+    cursor: pointer;
+  }
+  .banner-dot.active {
+    background: var(--accent);
+    width: 14px;
+    border-radius: 3px;
+  }
+
+  /* divider */
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.04);
+    margin: 4px 0;
+  }
+
+  /* ── EVENTS PAGE ── */
+  .section-sub-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    padding: 18px 18px 8px;
+    text-transform: uppercase;
+  }
+  .month-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+    padding: 16px 18px 8px;
+    text-transform: uppercase;
+  }
+
+  /* toggle row */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px 0;
+  }
+  .toggle-label {
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .toggle {
+    width: 36px; height: 20px;
+    background: var(--card2);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(16px); }
+
+  /* ── 直播頁小標題 ── */
+  .live-sub-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 14px 18px 6px;
+  }
+
+  /* ── OFFLINE divider in live page ── */
+  .offline-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px 10px;
+  }
+  .offline-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .offline-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* ── Offline toggle button ── */
+  .offline-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 12px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: color 0.15s;
+  }
+  .offline-toggle:hover { color: var(--text2); }
+  .offline-toggle-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+  .offline-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .offline-arrow {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    font-style: normal;
+    font-size: 10px;
+  }
+  .offline-toggle.open .offline-arrow { transform: rotate(90deg); }
+
+  /* ── Offline list ── */
+  .offline-list {
+    display: none;
+  }
+  .offline-list.open { display: block; }
+
+  /* page title area */
+  .page-title-area {
+    padding: 16px 18px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .page-title span { color: var(--accent); }
+
+  /* LIVE LIVE big header */
+  .live-header {
+    padding: 16px 18px 0;
+  }
+  .live-title {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .live-title-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--live-red);
+    box-shadow: 0 0 8px var(--live-red);
+    animation: pulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* empty space at bottom of offline */
+  .spacer { height: 20px; }
+  .last-updated {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    padding: 4px 0 16px;
+    opacity: 0.6;
+  }
+
+  /* ── Skeleton loading ── */
+  @keyframes skeleton-shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, var(--card) 25%, var(--card2) 50%, var(--card) 75%);
+    background-size: 800px 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+  }
+  .skeleton-card {
+    margin: 0 18px 8px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .skeleton-line {
+    height: 14px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+  }
+  .skeleton-line.short { width: 40%; }
+  .skeleton-line.medium { width: 65%; }
+  .skeleton-line.full { width: 100%; }
+  .skeleton-line.title { height: 20px; width: 75%; }
+  .skeleton-tag { height: 18px; width: 52px; border-radius: 4px; margin-bottom: 8px; display: inline-block; }
+  .skeleton-hero {
+    margin: 12px 18px 0;
+    border-radius: var(--radius);
+    aspect-ratio: 16/9;
+  }
+  .skeleton-scroll {
+    display: flex;
+    gap: 10px;
+    padding: 0 18px 4px;
+    overflow: hidden;
+  }
+  .skeleton-scroll-card {
+    flex-shrink: 0;
+    width: 130px;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .skeleton-scroll-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+  }
+  .skeleton-scroll-name { height: 12px; width: 80%; border-radius: 3px; }
+
+  /* ── Loading placeholder ── */
+  .loading-placeholder {
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 32px 18px;
+  }
+  .error-placeholder {
+    text-align: center;
+    color: var(--live-red);
+    font-size: 12px;
+    padding: 20px 18px;
+    opacity: 0.7;
+  }
+
+  /* ── Three-dot menu ── */
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    display: none;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+  .menu-overlay.open { display: flex; }
+  .menu-panel {
+    margin: 52px 12px 0 0;
+    background: #1C1A2E;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    min-width: 200px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .menu-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .menu-site-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .menu-site-name span { color: var(--accent); }
+  .menu-site-desc {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s, color 0.15s;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .menu-item-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* ── 網站說明頁面 ── */
+  .guide-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 400;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .guide-overlay.open { display: flex; }
+  .guide-panel {
+    width: 100%;
+    max-width: 480px;
+    height: 88vh;
+    background: var(--bg);
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0.6; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .guide-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .guide-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .guide-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .guide-section { margin-bottom: 24px; }
+  .guide-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .guide-section p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .guide-term {
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 2px solid rgba(168,85,247,0.25);
+  }
+  .guide-term strong {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .guide-term span {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .menu-about {
+    display: none;
+    padding: 10px 16px 14px;
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.7;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    background: rgba(0,0,0,0.15);
+  }
+  .menu-about.open { display: block; }
+  .menu-about p { margin-bottom: 2px; }
+  .menu-contact {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ── Expandable card detail ── */
+  .event-expand {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+    opacity: 0;
+    margin-top: 0;
+  }
+  .event-expand.open {
+    max-height: 1000px; /* 夠大讓任何內容都能完整顯示 */
+    opacity: 1;
+    margin-top: 10px;
+  }
+  .event-expand-inner {
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-line; /* 支援換行 */
+  }
+  .event-expand-inner p { margin-bottom: 6px; }
+  .event-expand-inner p:last-child { margin-bottom: 0; }
+
+  /* 展開遮罩：點任何地方收起，但不擋捲動 */
+  .expand-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    pointer-events: none; /* 預設不攔截任何事件 */
+  }
+  .expand-overlay.active {
+    display: block;
+    pointer-events: auto; /* 啟用時攔截點擊 */
+    touch-action: none; /* 但只攔截點擊，不攔截捲動 */
+  }
+
+  /* 展開時卡片不做額外高亮 */
+  .event-card.expanded {
+    border-color: rgba(255,255,255,0.08);
+  }
+  .detail-link {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  .detail-link:hover { color: var(--accent); }
+  .detail-arrow {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    font-style: normal;
+  }
+  .detail-link.open .detail-arrow { transform: rotate(90deg); }
+</style>
+</head>
+<body>
+
+<div class="switcher">
+  <button class="active" onclick="showPage('home', this)">首頁</button>
+  <button onclick="showPage('live', this)">直播</button>
+  <button onclick="showPage('events', this)">賽事</button>
+</div>
+
+<div class="phone">
+
+  <!-- ══════════════ HOME PAGE ══════════════ -->
+  <div class="page active" id="page-home">
+    <header id="site-header-home"></header>
+
+    <div class="content">
+
+      <!-- Hero container (hidden until ready) -->
+      <div id="hero-container" class="hero-container">
+        <!-- 輪播軌道：由 JS 動態填入比賽卡片 -->
+        <div class="hero-track-wrap">
+          <div class="hero-track" id="hero-track"></div>
+        </div>
+        <!-- 底部點點 -->
+        <div id="hero-nav" style="display:none;">
+          <div class="hero-nav-dots" id="hero-nav-dots"></div>
+        </div>
+      </div><!-- /hero-container -->
+
+      <div class="game-art-carousel" id="game-art-carousel" style="display:none;"></div>
+
+      <!-- 觀賽直播橫向滑動 -->
+      <div id="home-live-scroll-section" style="display:none;">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="live-title-dot" id="home-scroll-dot" style="display:none;"></div>
+            <h2 id="home-scroll-title">觀賽直播</h2>
+          </div>
+          <span class="more-link" id="home-scroll-more" onclick="showPage('live')">看更多 ›</span>
+        </div>
+        <div class="live-scroll" id="home-live-scroll"></div>
+      </div>
+
+      <!-- 官方主台橫向滑動（多個官方台時才顯示）-->
+      <div id="home-official-scroll-section" style="display:none;">
+        <div class="section-header">
+          <h2>官方主台</h2>
+        </div>
+        <div class="live-scroll" id="home-official-scroll"></div>
+      </div>
+
+      <!-- Currently happening -->
+      <div id="home-live-section">
+        <div class="section-header">
+          <h2>現正進行中</h2>
+        </div>
+        <div id="home-live-events">
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-tag"></div>
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-tag"></div>
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner carousel -->
+      <div class="banner-carousel" id="banner-home" data-count="1">
+        <div class="loading-placeholder" style="padding:24px;">載入中…</div>
+      </div>
+
+      <!-- Upcoming -->
+      <div class="section-header">
+        <h2>近期賽事</h2>
+        <span class="more-link" onclick="showPage('events')">看更多 ›</span>
+      </div>
+
+      <div id="home-upcoming-events">
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-line title"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-line title"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-line title"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+      </div>
+
+      <div class="last-updated">最後更新：<span class="last-updated-time">--:--</span></div>
+      <div class="spacer"></div>
+    </div>
+
+    <nav class="bottom-nav" id="site-nav-home"></nav>
+  </div>
+
+  <!-- ══════════════ LIVE PAGE ══════════════ -->
+  <div class="page" id="page-live">
+    <header id="site-header-live"></header>
+
+    <div class="content">
+      <div class="live-header">
+        <div class="live-card-title">
+          <div class="live-title-dot"></div>
+          LIVE 實況中的格鬥遊戲頻道
+        </div>
+      </div>
+
+      <!-- Game filter -->
+      <div class="filter-chips">
+        <div class="chip active" onclick="filterChip(this, 'all')">全部</div>
+        <div class="chip" onclick="filterChip(this, 'sf6')">SF6</div>
+        <div class="chip" onclick="filterChip(this, 'kof')">KOF XV</div>
+        <div class="chip" onclick="filterChip(this, 'cotw')">餓狼</div>
+        <div class="chip" onclick="filterChip(this, 'ggst')">GGST</div>
+        <div class="chip" onclick="filterChip(this, 'gbvsr')">GBVSR</div>
+        <div class="chip" onclick="filterChip(this, 'tk8')">TK8</div>
+        <div class="chip" onclick="filterChip(this, 'other')">其他</div>
+      </div>
+
+      <!-- Live list -->
+
+
+      <!-- LIVE 區塊（之後由 Apps Script 驅動）-->
+      <div id="live-online-cards">
+        <!-- 目前無直播資料，待串接 Twitch API 後顯示 -->
+      </div>
+
+      <!-- Offline toggle -->
+      <div class="offline-section" id="offline-section">
+        <button class="offline-toggle" onclick="toggleOffline(this)">
+          <div class="offline-toggle-line"></div>
+          <div class="offline-toggle-label">
+            OFFLINE <span id="offline-count" style="color:var(--text3);font-weight:400;font-size:10px;text-transform:none;letter-spacing:0;"></span>
+            <i class="offline-arrow">›</i>
+          </div>
+          <div class="offline-toggle-line"></div>
+        </button>
+        <div class="offline-list" id="offline-list">
+          <div class="loading-placeholder">載入中…</div>
+        </div>
+      </div>
+
+      <div class="last-updated">最後更新：<span class="last-updated-time">--:--</span></div>
+      <div class="spacer"></div>
+    </div>
+
+    <nav class="bottom-nav" id="site-nav-live"></nav>
+  </div>
+
+  <!-- ══════════════ EVENTS PAGE ══════════════ -->
+  <div class="page" id="page-events">
+    <header id="site-header-events"></header>
+
+    <div class="content">
+
+      <div class="page-title-area">
+        <div class="page-title">賽事列表</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="toggle-label" style="font-size:11px;color:var(--text3);">只看台灣選手</span>
+          <div class="toggle" id="tw-toggle" onclick="toggleTW(this)"></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchEventsTab(this, 'featured')">焦點大賽</div>
+        <div class="tab" onclick="switchEventsTab(this, 'community')">社群 &amp; 聯賽</div>
+      </div>
+
+      <!-- ── 焦點大賽 panel ── -->
+      <div id="events-featured">
+        <div class="skeleton skeleton-line short" style="margin:20px 18px 10px;height:12px;"></div>
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-tag"></div>
+          <div class="skeleton skeleton-line title"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-line title"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-line title"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+      </div><!-- /events-featured -->
+
+      <!-- ── 社群 & 聯賽 panel ── -->
+      <div id="events-community" style="display:none;">
+
+        <!-- Banner carousel -->
+        <div class="banner-carousel" id="banner-community" data-count="1" style="margin-top:12px;">
+          <div class="loading-placeholder" style="padding:24px;">載入中…</div>
+        </div>
+
+        <div class="section-sub-label">社群</div>
+        <div id="events-social-cards">
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+          </div>
+        </div>
+
+        <div class="section-sub-label">聯賽</div>
+        <div id="events-community-cards">
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+          </div>
+        </div>
+
+      </div><!-- /events-community -->
+
+      <div class="last-updated">最後更新：<span class="last-updated-time">--:--</span></div>
+      <div class="spacer"></div>
+    </div>
+
+    <nav class="bottom-nav" id="site-nav-events"></nav>
+  </div>
+
+  <!-- Expand overlay -->
+  <div class="expand-overlay" id="expand-overlay" onclick="closeAllExpands()"></div>
+
+  <!-- 網站說明 -->
+  <div class="guide-overlay" id="guide-overlay">
+    <div class="guide-panel">
+      <div class="guide-header">
+        <div class="guide-title">網站說明</div>
+        <button class="icon-btn" onclick="closeGuide()">✕</button>
+      </div>
+      <div class="guide-content">
+
+        <div class="guide-section">
+          <div class="guide-section-title">這是什麼網站？</div>
+          <p>623Hub 整理台灣格鬥遊戲圈的比賽資訊與實況直播。不管你想看比賽、找正在開台的玩家，或追蹤最近有哪些活動，都可以在這裡快速找到。</p>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">格鬥遊戲是什麼？</div>
+          <p>格鬥遊戲是一種兩位玩家互相對戰的遊戲。<br>  
+玩家需要操作角色移動、防禦、攻擊，並透過不同方向及按鍵組合使出特殊招式或連續技來擊敗對手。<br>
+除了手速與操作技巧之外，也很講究「預判對手下一步要做什麼」，因此常常被認為像是在進行高速的心理戰。<br>
+常見作品有 Street Fighter（快打旋風）、Tekken（鐵拳）、KOF(格鬥天王/拳皇) 等。</p>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">常見名詞</div>
+          <div class="guide-term">
+            <strong>共同觀賽</strong>
+            <span>通常稱 共同視聽/co-stream/watching party/觀賽派對，實況主一邊看比賽轉播、一邊跟觀眾聊天討論的直播形式，比單純看官方轉播更有互動感。</span>
+          </div>
+          <div class="guide-term">
+            <strong>焦點大賽</strong>
+            <span>規模較大、受國際關注的格鬥遊戲賽事，通常有多個遊戲項目同時進行。</span>
+          </div>
+          <div class="guide-term">
+            <strong>社群＆聯賽</strong>
+            <span>由社群自行舉辦的小型賽事，或長期定期舉行的積分聯賽。</span>
+          </div>
+          <div class="guide-term">
+            <strong>start.gg</strong>
+            <span>格鬥遊戲圈最常用的賽事報名與賽程查詢平台，許多比賽的詳細賽程都會放在這裡，賽事沒有直播時也能用來看比賽進度和賽果。</span>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <div class="guide-section-title">怎麼開始看比賽？</div>
+          <p>到「賽事」頁面看看最近有沒有進行中或即將到來的比賽，點賽程表可以查看詳細對戰時間。也可以到「實況」頁面，看看現在有誰正在開台。</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Three-dot menu -->
+  <div class="menu-overlay" id="menu-overlay" onclick="closeMenu(event)">
+    <div class="menu-panel" onclick="event.stopPropagation()">
+      <div class="menu-header">
+        <div class="menu-site-name">623<span>Hub</span></div>
+        <div class="menu-site-desc">一站追蹤台灣格鬥遊戲賽事、直播資訊入口</div>
+      </div>
+      <button class="menu-item" onclick="openGuide()">
+        <span class="menu-item-icon">📖</span>
+        網站說明
+      </button>
+      <a href="https://forms.gle/yLvmLfM3ASG22W817" target="_blank"><button class="menu-item">
+        <span class="menu-item-icon">💬</span>
+        提供意見回饋
+      </button></a>
+      <button class="menu-item" onclick="toggleAbout(this)">
+        <span class="menu-item-icon">ℹ️</span>
+        關於 623Hub
+      </button>
+      <div class="menu-about" id="menu-about">
+        <p>網頁架構與 Claude 合作完成</p>
+        <p>資料多為人工收集或Ai文案，有任何錯誤還請見諒</p>
+        <p>若內容造成您的困擾，請聯絡我們，我們將儘速為您處理</p>
+        <a href="mailto: zwjh2019@gmail.com" class="menu-contact" target="_blank">✉ 聯絡我們</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+function shuffleLiveCards() {
+  const liveSection = document.querySelector('#page-live .content');
+  if (!liveSection) return;
+  // Get all online live cards (not in offline-list)
+  const onlineCards = Array.from(liveSection.querySelectorAll('.live-card:not(.offline-list .live-card)'));
+  if (onlineCards.length < 2) return;
+  // Find insertion point (before offline section)
+  const offlineSection = document.getElementById('offline-section');
+  // Shuffle
+  for (let i = onlineCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [onlineCards[i], onlineCards[j]] = [onlineCards[j], onlineCards[i]];
+  }
+  // Re-insert in shuffled order
+  onlineCards.forEach(card => {
+    liveSection.insertBefore(card, offlineSection);
+  });
+}
+
+function toggleAbout(btn) {
+  const about = document.getElementById('menu-about');
+  about.classList.toggle('open');
+}
+
+function openGuide() {
+  closeMenu();
+  document.getElementById('guide-overlay').classList.add('open');
+}
+
+function closeGuide() {
+  document.getElementById('guide-overlay').classList.remove('open');
+}
+
+function openMenu() {
+  document.getElementById('menu-overlay').classList.add('open');
+}
+
+function closeMenu(e) {
+  document.getElementById('menu-overlay').classList.remove('open');
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + id);
+  target.classList.add('active');
+  const content = target.querySelector('.content');
+  if (content) content.scrollTop = 0;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item[data-page="' + id + '"]').forEach(b => b.classList.add('active'));
+  // 更新網址 hash，讓重新整理能回到同一頁
+  history.replaceState(null, '', '#' + id);
+}
+
+// 讀取 hash 決定初始頁面
+function initPageFromHash() {
+  const hash = window.location.hash.replace('#', '');
+  const validPages = ['home', 'live', 'events'];
+  const page = validPages.includes(hash) ? hash : 'home';
+  showPage(page);
+}
+
+function filterChip(chipEl, game) {
+  chipEl.closest('.filter-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  chipEl.classList.add('active');
+
+  const offlineSection = document.getElementById('offline-section');
+  if (offlineSection) {
+    offlineSection.style.display = (game === 'all') ? '' : 'none';
+  }
+
+  const mainGames = ['sf6','kof','cotw','ggst','gbvsr','tk8'];
+  const livePage = document.querySelector('#page-live .content');
+  const cards = document.querySelectorAll('#page-live .live-card');
+  let visibleCount = 0;
+
+  cards.forEach(card => {
+    if (card.closest('.offline-list')) return;
+    const g = card.dataset.game || 'other';
+    let show = false;
+    if (game === 'all') show = true;
+    else if (game === 'other') show = !mainGames.includes(g);
+    else show = (g === game);
+    card.style.display = show ? '' : 'none';
+    if (show) visibleCount++;
+  });
+
+  // 移除舊的空結果提示
+  const existing = document.getElementById('live-empty-msg');
+  if (existing) existing.remove();
+
+  // 顯示空結果提示
+  if (visibleCount === 0 && game !== 'all') {
+    const msg = document.createElement('div');
+    msg.id = 'live-empty-msg';
+    msg.style.cssText = 'text-align:center;color:var(--text3);font-size:13px;padding:32px 18px;';
+    msg.textContent = '── 目前沒有直播中的頻道 ──';
+    if (offlineSection && livePage) {
+      livePage.insertBefore(msg, offlineSection);
+    }
+  }
+}
+
+function switchEventsTab(tabEl, panel) {
+  tabEl.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.getElementById('events-featured').style.display = panel === 'featured' ? '' : 'none';
+  document.getElementById('events-community').style.display = panel === 'community' ? '' : 'none';
+  // Show/hide TW toggle — only on 焦點大賽
+  const twRow = document.getElementById('tw-toggle').parentElement;
+  twRow.style.display = panel === 'featured' ? '' : 'none';
+  // Re-apply TW filter
+  if (panel === 'featured') {
+    const twOn = document.getElementById('tw-toggle').classList.contains('on');
+    applyTWFilter(twOn);
+  }
+}
+
+function toggleTW(el) {
+  el.classList.toggle('on');
+  applyTWFilter(el.classList.contains('on'));
+}
+
+function applyTWFilter(twOn) {
+  const cards = document.querySelectorAll('#page-events .event-card');
+  cards.forEach(card => {
+    if (twOn && card.dataset.tw === 'false') {
+      card.style.display = 'none';
+    } else {
+      card.style.display = '';
+    }
+  });
+
+  // 隱藏空的月份標籤（沒有可見卡片的月份）
+  const monthLabels = document.querySelectorAll('#events-featured .month-label');
+  monthLabels.forEach(label => {
+    // 找到這個月份標籤之後、下一個月份標籤之前的所有卡片
+    let sibling = label.nextElementSibling;
+    let hasVisible = false;
+    while (sibling && !sibling.classList.contains('month-label')) {
+      if (sibling.classList.contains('event-card') && sibling.style.display !== 'none') {
+        hasVisible = true;
+        break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+    label.style.display = hasVisible ? '' : 'none';
+  });
+}
+
+function toggleOffline(btn) {
+  const list = document.getElementById('offline-list');
+  const isOpen = list.classList.contains('open');
+  list.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+function switchHeroTab(tabEl, panelId, slideIndex) {
+  tabEl.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  const idx = slideIndex !== undefined ? slideIndex : (window._heroEventIndex || 0);
+  const hot = document.getElementById('hero-hot-' + idx);
+  const official = document.getElementById('hero-official-' + idx);
+  if (panelId === 'hot') {
+    if (hot) hot.style.display = '';
+    if (official) official.style.display = 'none';
+  } else {
+    if (hot) hot.style.display = 'none';
+    if (official) official.style.display = '';
+  }
+}
+
+// 點卡片任何地方：收起時展開，展開時收起
+function handleCardClick(cardEl, event) {
+  // 如果點擊的是 detail-link 或其子元素，由 toggleExpand 處理，這裡不重複觸發
+  if (event && event.target.closest('.detail-link')) return;
+  // 如果點擊的是賽程表按鈕，不觸發展開
+  if (event && event.target.closest('a[href]')) return;
+  const isOpen = cardEl.classList.contains('expanded');
+  if (isOpen) {
+    closeExpand(cardEl);
+  } else {
+    closeAllExpands();
+    openExpand(cardEl);
+  }
+}
+
+// 點「詳細」按鈕：stopPropagation 避免同時觸發 handleCardClick
+function toggleExpand(linkEl, event) {
+  if (event) event.stopPropagation();
+  const card = linkEl.closest('.event-card');
+  const isOpen = card.classList.contains('expanded');
+  if (isOpen) {
+    closeExpand(card);
+  } else {
+    closeAllExpands();
+    openExpand(card);
+  }
+}
+
+function openExpand(card) {
+  const expand = card.querySelector('.event-expand');
+  const link = card.querySelector('.detail-link');
+  if (!expand) return;
+  expand.classList.add('open');
+  if (link) link.classList.add('open');
+  card.classList.add('expanded');
+}
+
+function closeExpand(card) {
+  const expand = card.querySelector('.event-expand');
+  const link = card.querySelector('.detail-link');
+  if (expand) expand.classList.remove('open');
+  if (link) link.classList.remove('open');
+  card.classList.remove('expanded');
+}
+
+function closeAllExpands() {
+  document.querySelectorAll('.event-card.expanded').forEach(card => closeExpand(card));
+}
+
+// ── Headroom: hide header on scroll down, show on scroll up ──
+function setupHeadroom(contentEl, headerEl) {
+  var lastY = 0;
+  var ticking = false;
+  contentEl.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        var y = contentEl.scrollTop;
+        if (y > lastY && y > 60) {
+          headerEl.classList.add('hidden');
+        } else {
+          headerEl.classList.remove('hidden');
+        }
+        lastY = y;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+}
+
+
+// ════════════════════════════════════════════
+// ── Hero 區 ──
+// ── 遊戲宣傳圖輪播（沒有賽事時顯示）──
+const gameArtTimers = {};
+
+async function loadGameArtCarousel() {
+  try {
+    const arts = await fetchSheet('遊戲宣傳圖');
+    const visible = arts.filter(a =>
+      a['顯示'] !== false && a['顯示'] !== 'FALSE' && a['顯示'] !== 0
+    );
+
+    const heroHot = document.getElementById('hero-hot');
+    const carousel = document.getElementById('game-art-carousel');
+    if (!carousel) return;
+
+    if (visible.length === 0) {
+      // 沒有設定圖片，保持原本 Hero 顯示（不要兩個都空）
+      if (heroHot) heroHot.style.display = '';
+      carousel.style.display = 'none';
+      return;
+    }
+
+    // 隱藏原本的 Hero，顯示輪播
+    if (heroHot) heroHot.style.display = 'none';
+    carousel.style.display = 'block';
+
+    visible.sort((a, b) => (Number(a['順序']) || 0) - (Number(b['順序']) || 0));
+
+    carousel.innerHTML = visible.map((a, i) => `
+      <div class="game-art-slide${i === 0 ? ' active' : ''}" style="background-image:url(${a['圖片網址'] || ''});">
+        <div class="game-art-slide-overlay">
+          <div class="game-art-name">${a['遊戲名稱'] || ''}</div>
+        </div>
+      </div>
+    `).join('');
+
+    if (visible.length > 1) {
+      if (gameArtTimers.main) clearInterval(gameArtTimers.main);
+      let current = 0;
+      gameArtTimers.main = setInterval(() => {
+        current = (current + 1) % visible.length;
+        carousel.querySelectorAll('.game-art-slide').forEach((s, i) => {
+          s.classList.toggle('active', i === current);
+        });
+      }, 6000);
+    }
+
+  } catch(e) {
+    console.error('載入遊戲宣傳圖失敗', e);
+  }
+}
+
+async function loadHero() {
+  try {
+    const events = await fetchSheet('賽事');
+
+    const visible = events.filter(ev =>
+      ev['顯示'] !== false && ev['顯示'] !== 'FALSE' && ev['顯示'] !== 0
+    );
+
+    // 找出所有「進行中」的賽事（不限分類）
+    const liveEvents = visible.filter(ev => isEventLive(ev));
+
+    const heroOfficial = document.getElementById('hero-official');
+    const heroTabs = document.querySelector('#page-home .tabs');
+
+    // 沒有進行中的賽事 → 圖片輪播
+    if (liveEvents.length === 0) {
+      if (heroOfficial) heroOfficial.style.display = 'none';
+      if (heroTabs) heroTabs.style.display = 'none';
+      await loadGameArtCarousel();
+      window._currentLiveEvent = null;
+      window._liveEvents = [];
+      window._heroEventIndex = 0;
+      return;
+    }
+
+    // 記錄所有進行中賽事，預設顯示第一個
+    window._liveEvents = liveEvents;
+    window._heroEventIndex = 0;
+    const liveEvent = liveEvents[0];
+    window._currentLiveEvent = liveEvent;
+
+    const carousel = document.getElementById('game-art-carousel');
+    if (carousel) carousel.style.display = 'none';
+
+    // 建立輪播軌道
+    buildHeroTrack(liveEvents);
+
+    const name = liveEvent['名稱'] || '';
+    const scheduleUrl = liveEvent['賽程連結'] || '';
+    const fallbackImg = liveEvent['替代圖片'] || '';
+
+    // 預設先顯示賽事靜態資訊（之後 updateHeroTabs 會視在線狀況覆蓋）
+    // buildHeroTrack 已建好 slides，逐一更新每個 slide 的靜態內容
+    liveEvents.forEach((ev, i) => {
+      const evName = ev['名稱'] || '';
+      const evScheduleUrl = ev['賽程連結'] || '';
+      const evFallbackImg = ev['替代圖片'] || '';
+
+      const artEl = document.getElementById(`hero-art-${i}`);
+      const heroImgEl = document.getElementById(`hero-img-hot-${i}`);
+      if (evFallbackImg && heroImgEl) {
+        heroImgEl.style.backgroundImage = `url(${evFallbackImg})`;
+        heroImgEl.style.backgroundSize = 'cover';
+        heroImgEl.style.backgroundPosition = 'center';
+        if (artEl) artEl.style.display = 'none';
+      } else {
+        if (artEl) { artEl.textContent = evName.split(' ')[0] || evName; artEl.style.display = ''; }
+      }
+
+      const hotContent = document.getElementById(`hero-hot-content-${i}`);
+      if (hotContent) {
+        hotContent.innerHTML = `
+          <div class="hero-event-name">${evName}</div>
+          <div class="hero-sub">
+            <span class="hero-live-badge">LIVE</span>
+            目前沒有觀賽派對
+          </div>
+          <div class="hero-cta">
+            ${evScheduleUrl ? `<a href="${evScheduleUrl}" target="_blank"><button class="btn-primary">賽事詳細 →</button></a>` : ''}
+            <button class="btn-ghost" onclick="showPage('live')">查看直播</button>
+          </div>`;
+      }
+
+      const officialArt = document.getElementById(`hero-official-art-${i}`);
+      const officialImgEl = document.getElementById(`hero-img-official-${i}`);
+      if (evFallbackImg && officialImgEl) {
+        officialImgEl.style.backgroundImage = `url(${evFallbackImg})`;
+        officialImgEl.style.backgroundSize = 'cover';
+        officialImgEl.style.backgroundPosition = 'center';
+        if (officialArt) officialArt.style.display = 'none';
+      } else {
+        if (officialArt) { officialArt.textContent = evName.split(' ')[0] || evName; officialArt.style.display = ''; }
+      }
+
+      const officialContent = document.getElementById(`hero-official-content-${i}`);
+      if (officialContent) {
+        officialContent.innerHTML = `
+          <div class="hero-event-name">${evName}（官方主台）</div>
+          <div class="hero-sub">
+            <span class="hero-live-badge">LIVE</span>
+            目前無官方轉播
+          </div>
+          <div class="hero-cta">
+            ${evScheduleUrl ? `<a href="${evScheduleUrl}" target="_blank"><button class="btn-primary">賽事詳細 →</button></a>` : ''}
+            <button class="btn-ghost" onclick="showPage('events')">查看賽事</button>
+          </div>`;
+      }
+    });
+
+  } catch(e) {
+    console.error('載入 Hero 失敗', e);
+  }
+}
+
+// ── 切換 Hero 比賽（左右箭頭）──
+function jumpHeroEvent(index) {
+  if (!window._liveEvents) return;
+  const total = window._liveEvents.length;
+  window._heroEventIndex = index;
+  window._currentLiveEvent = window._liveEvents[index];
+
+  // 更新點點
+  document.querySelectorAll('.hero-nav-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === index);
+  });
+
+  // 更新 slide 狀態（active = 置中，其他淡化）
+  document.querySelectorAll('.hero-slide').forEach((s, i) => {
+    s.classList.toggle('active', i === index);
+  });
+
+  // 移動軌道：直接量測目標 slide 的實際位置與寬度，再置中
+  // （改用 offsetLeft/offsetWidth 取代百分比估算，避免估算誤差隨 index 累積放大）
+  const track = document.getElementById('hero-track');
+  const targetSlide = track ? track.children[index] : null;
+  if (track && targetSlide) {
+    const wrapWidth = track.parentElement.offsetWidth;
+    const offset = (wrapWidth / 2) - (targetSlide.offsetLeft + targetSlide.offsetWidth / 2);
+    track.style.transform = `translateX(${offset}px)`;
+  }
+
+  // 重新計算精選頻道
+  if (window._cachedLiveStreamers) {
+    updateHeroForEvent(window._cachedLiveStreamers);
+  }
+}
+
+function switchHeroEvent(dir) {
+  if (!window._liveEvents || window._liveEvents.length <= 1) return;
+  const total = window._liveEvents.length;
+  window._heroEventIndex = (window._heroEventIndex + dir + total) % total;
+  window._currentLiveEvent = window._liveEvents[window._heroEventIndex];
+  // 更新點點
+  document.querySelectorAll('.hero-nav-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === window._heroEventIndex);
+  });
+  // 更新 Hero 內容
+  refreshHeroContent(window._currentLiveEvent);
+}
+
+function refreshHeroContent(liveEvent) {
+  const idx = window._heroEventIndex || 0;
+  const name = liveEvent['名稱'] || '';
+  const scheduleUrl = liveEvent['賽程連結'] || '';
+  const fallbackImg = liveEvent['替代圖片'] || '';
+
+  const artEl = document.getElementById(`hero-art-${idx}`);
+  const officialArt = document.getElementById(`hero-official-art-${idx}`);
+  const heroImgEl = document.getElementById(`hero-img-hot-${idx}`);
+  const officialImgEl = document.getElementById(`hero-img-official-${idx}`);
+
+  if (fallbackImg) {
+    [heroImgEl, officialImgEl].forEach(el => {
+      if (el) { el.style.backgroundImage = `url(${fallbackImg})`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
+    });
+    if (artEl) artEl.style.display = 'none';
+    if (officialArt) officialArt.style.display = 'none';
+  } else {
+    if (artEl) { artEl.textContent = name.split(' ')[0] || name; artEl.style.display = ''; }
+    if (officialArt) { officialArt.textContent = name.split(' ')[0] || name; officialArt.style.display = ''; }
+  }
+
+  const hotContent = document.getElementById(`hero-hot-content-${idx}`);
+  if (hotContent) {
+    hotContent.innerHTML = `
+      <div class="hero-event-name">${name}</div>
+      <div class="hero-sub"><span class="hero-live-badge">LIVE</span> 目前沒有觀賽派對</div>
+      <div class="hero-cta">
+        ${scheduleUrl ? `<a href="${scheduleUrl}" target="_blank"><button class="btn-primary">賽事詳細 →</button></a>` : ''}
+        <button class="btn-ghost" onclick="showPage('live')">查看直播</button>
+      </div>`;
+  }
+
+  const officialContent = document.getElementById(`hero-official-content-${idx}`);
+  if (officialContent) {
+    officialContent.innerHTML = `
+      <div class="hero-event-name">${name}（官方主台）</div>
+      <div class="hero-sub"><span class="hero-live-badge">LIVE</span> 目前無官方轉播</div>
+      <div class="hero-cta">
+        ${scheduleUrl ? `<a href="${scheduleUrl}" target="_blank"><button class="btn-primary">賽事詳細 →</button></a>` : ''}
+        <button class="btn-ghost" onclick="showPage('events')">查看賽事</button>
+      </div>`;
+  }
+}
+
+// 重置 hero 背景圖（清掉之前可能設定的直播縮圖/頭貼）
+function heroImgReset(panelId) {
+  const img = document.querySelector('#' + panelId + ' .hero-img');
+  if (img) {
+    img.style.backgroundImage = '';
+    img.style.background = '';
+  }
+  return true;
+}
+
+// Banner 輪播
+// ════════════════════════════════════════════
+const bannerTimers = {};
+
+function renderBannerCarousel(containerId, slides) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!slides || slides.length === 0) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
+  container.setAttribute('data-count', slides.length);
+
+  // Build slides HTML
+  let slidesHTML = slides.map((s, i) => {
+    const isActive = i === 0 ? 'active' : '';
+    const href = s['連結'] || '#';
+    const hasImg = s['圖片網址'] && s['圖片網址'].startsWith('http');
+
+    if (hasImg) {
+      return `<a class="banner-slide ${isActive}" href="${href}" target="_blank">
+        <img class="banner-slide-img" src="${s['圖片網址']}" alt="${s['標題'] || ''}">
+      </a>`;
+    } else {
+      return `<div class="banner-slide ${isActive}">
+  <div class="banner-slide-text">
+
+    <div class="banner-text-content">
+      <strong>${s['標題'] || ''}</strong><br>
+      ${s['說明文字'] || ''}
+    </div>
+
+    ${s['按鈕文字']
+      ? `<a href="${href}" target="_blank" class="banner-btn">
+           ${s['按鈕文字']}
+         </a>`
+      : ''
+    }
+
+  </div>
+</div>`;
+    }
+  }).join('');
+
+  // Dots
+  const dotsHTML = slides.length > 1
+    ? `<div class="banner-dots">${slides.map((_, i) =>
+        `<div class="banner-dot ${i === 0 ? 'active' : ''}"></div>`
+      ).join('')}</div>`
+    : '';
+
+  container.innerHTML = slidesHTML + dotsHTML;
+
+  // Auto-rotate if more than 1 slide
+  if (slides.length > 1) {
+    let current = 0;
+    if (bannerTimers[containerId]) clearInterval(bannerTimers[containerId]);
+    bannerTimers[containerId] = setInterval(() => {
+      const allSlides = container.querySelectorAll('.banner-slide');
+      const allDots = container.querySelectorAll('.banner-dot');
+      allSlides[current].classList.remove('active');
+      allDots[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      allSlides[current].classList.add('active');
+      allDots[current].classList.add('active');
+    }, 8000);
+  }
+}
+
+async function loadBanners() {
+  try {
+    const banners = await fetchSheet('Banner');
+    const visible = banners
+      .filter(b => b['顯示'] !== false && b['顯示'] !== 'FALSE' && b['顯示'] !== 0)
+      .sort((a, b) => (Number(a['順序']) || 0) - (Number(b['順序']) || 0));
+
+    // 依「位置」欄位篩選
+    const forHome = visible.filter(b => {
+      const pos = (b['位置'] || '').trim();
+      return !pos || pos === '全部' || pos === '首頁';
+    });
+    const forCommunity = visible.filter(b => {
+      const pos = (b['位置'] || '').trim();
+      return !pos || pos === '全部' || pos === '社群聯賽';
+    });
+
+    renderBannerCarousel('banner-home', forHome);
+    renderBannerCarousel('banner-community', forCommunity);
+  } catch(e) {
+    console.error('載入 Banner 失敗', e);
+    ['banner-home', 'banner-community'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+}
+
+
+// ════════════════════════════════════════════
+// 共用 Header 和 Nav
+// ════════════════════════════════════════════
+const HEADER_HTML = `
+  <div class="logo-wrap">
+    <div class="logo">623<span>Hub</span></div>
+    <div class="logo-tagline">一站追蹤台灣格鬥遊戲賽事、直播資訊</div>
+  </div>
+  <button class="icon-btn" onclick="openMenu()">⋯</button>
+`;
+
+const NAV_ITEMS = [
+  {
+    page: 'live',
+    label: '實況',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M20.07 4.93a10 10 0 0 1 0 14.14"/><path d="M3.93 19.07a10 10 0 0 1 0-14.14"/></svg>`
+  },
+  {
+    page: 'home',
+    label: '首頁',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
+  },
+  {
+    page: 'events',
+    label: '賽事',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
+  }
+];
+
+function renderSharedUI() {
+  // 渲染所有 header
+  document.querySelectorAll('[id^="site-header-"]').forEach(el => {
+    el.innerHTML = HEADER_HTML;
+  });
+
+  // 渲染所有 nav（依頁面設定 active）
+  document.querySelectorAll('[id^="site-nav-"]').forEach(nav => {
+    const pageId = nav.id.replace('site-nav-', '');
+    nav.innerHTML = NAV_ITEMS.map(item => `
+      <button class="nav-item${item.page === pageId ? ' active' : ''}"
+        data-page="${item.page}"
+        onclick="showPage('${item.page}')">
+        ${item.icon}
+        ${item.label}
+      </button>
+    `).join('');
+  });
+}
+
+// ════════════════════════════════════════════
+// Google Sheets 串接
+// ════════════════════════════════════════════
+const SHEETS_ID = '1MBU9FQYsPqEwSgdAjmfxzOETK8vmBPY_JeNkP6vNgCw';
+
+// ── 賽事「現正進行中」自動判斷 ──
+// 取代手動勾選的「進行中」欄位，根據日期和重複星期自動計算
+function isEventLive(ev, now) {
+  now = now || new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 今天 00:00
+  const todayEnd = new Date(today.getTime() + 24*60*60*1000 - 1); // 今天 23:59:59
+
+  const start = ev['開始日期'] instanceof Date ? ev['開始日期'] : (ev['開始日期'] ? new Date(ev['開始日期']) : null);
+  const end = ev['結束日期'] instanceof Date ? ev['結束日期'] : (ev['結束日期'] ? new Date(ev['結束日期']) : null);
+  const repeatType = (ev['重複類型'] || '').trim();
+  const repeatDays = (ev['重複星期'] || '').trim(); // 例如「四」「六,日」
+
+  // 系列賽還沒開始或已結束 → 一律不算進行中
+  if (start && today < new Date(start.getFullYear(), start.getMonth(), start.getDate())) return false;
+  if (end) {
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    if (today > endDay) return false;
+  }
+
+  if (repeatType === '固定星期' && repeatDays) {
+    // 比對今天是星期幾
+    const dayMap = { '日':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6 };
+    const targetDays = repeatDays.split(/[,，、]/).map(d => dayMap[d.trim()]).filter(d => d !== undefined);
+    return targetDays.includes(today.getDay());
+  }
+
+  // 單次賽事：開始日期 ≤ 今天 ≤ 結束日期
+  if (!start) return false;
+  const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const endDay = end ? new Date(end.getFullYear(), end.getMonth(), end.getDate()) : startDay;
+  return today >= startDay && today <= endDay;
+}
+
+// 賽事是否「即將到來」（今天之後、尚未過期）
+function isEventUpcoming(ev, now) {
+  now = now || new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = ev['開始日期'] instanceof Date ? ev['開始日期'] : (ev['開始日期'] ? new Date(ev['開始日期']) : null);
+  const end = ev['結束日期'] instanceof Date ? ev['結束日期'] : (ev['結束日期'] ? new Date(ev['結束日期']) : null);
+  if (!start) return false;
+  const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  if (startDay <= today) return false; // 已開始的不算「即將到來」
+  if (end) {
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    if (today > endDay) return false;
+  }
+  return true;
+}
+
+// 賽事是否已結束
+function isEventExpired(ev, now) {
+  now = now || new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = ev['結束日期'] instanceof Date ? ev['結束日期'] : (ev['結束日期'] ? new Date(ev['結束日期']) : null);
+  if (!end) return false;
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  return today > endDay;
+}
+
+// 讀取 Sheets 某個分頁的所有資料
+async function fetchSheet(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  // Google 回傳的格式有前綴要去掉
+  const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+  return parseSheet(json);
+}
+
+// 把 gviz 格式轉成好用的物件陣列
+function parseSheet(json) {
+  const cols = json.table.cols.map(c => c.label);
+  const colTypes = json.table.cols.map(c => c.type);
+  const rows = json.table.rows || [];
+  return rows.map(row => {
+    const obj = {};
+    cols.forEach((col, i) => {
+      const cell = row.c[i];
+      if (!cell || cell.v === null || cell.v === undefined) {
+        obj[col] = '';
+        return;
+      }
+      // Google gviz 日期格式是 "Date(year,month,day)" — month 從 0 開始
+      if (colTypes[i] === 'date' || colTypes[i] === 'datetime') {
+        const match = String(cell.v).match(/Date\((\d+),(\d+),(\d+)/);
+        if (match) {
+          const y = parseInt(match[1]);
+          const m = parseInt(match[2]) + 1; // 轉成 1-based
+          const d = parseInt(match[3]);
+          obj[col] = new Date(y, m - 1, d);
+        } else {
+          obj[col] = new Date(cell.v);
+        }
+      } else {
+        obj[col] = cell.v;
+      }
+    });
+    return obj;
+  });
+}
+
+// 日期格式化
+function formatDateRange(start, end) {
+  if (!start) return '';
+  const s = start instanceof Date ? start : new Date(start);
+  if (isNaN(s.getTime())) return '';
+  const startStr = `${s.getMonth()+1}/${s.getDate()}`;
+  if (!end) return `${startStr}（台灣時間）`;
+  const e = end instanceof Date ? end : new Date(end);
+  if (isNaN(e.getTime())) return `${startStr}（台灣時間）`;
+  const endStr = `${e.getMonth()+1}/${e.getDate()}`;
+  if (startStr === endStr) return `${startStr}（台灣時間）`;
+  return `${startStr} ～ ${endStr}（台灣時間）`;
+}
+
+// 解析詳細說明裡的連結 [文字](url)
+function parseLinks(text) {
+  if (!text) return '';
+  return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--accent);text-decoration:none;">$1</a>');
+}
+
+// 產生賽事卡片 HTML
+function renderEventCard(ev, isTwFiltered) {
+  const isTW = ev['台灣選手'] === true || ev['台灣選手'] === 'TRUE' || ev['台灣選手'] === 1;
+  if (isTwFiltered && !isTW) return '';
+
+  const isLive = isEventLive(ev);
+  const hasSchedule = ev['賽程連結'] && String(ev['賽程連結']).startsWith('http') ? ev['賽程連結'] : null;
+  const shortDesc = ev['短介紹'] || '';
+  const detail = ev['詳細說明'] || '';
+
+  const tags = [];
+  const repeatType = ev['重複類型'] || '';
+  const repeatDays = (ev['重複星期'] || '').trim();
+  if (isLive) tags.push('<span class="tag tag-live">● 進行中</span>');
+  else if (repeatType === '固定星期') tags.push('<span class="tag tag-weekly">每週</span>');
+  if (isTW) tags.push('<span class="tag tag-tw">台灣選手</span>');
+
+  // 日期處理
+  let dateStr = '';
+  if (repeatType === '固定星期' && repeatDays) {
+    // 計算這週（或下週）符合星期幾的具體日期
+    const dayMap = { '日':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6 };
+    const targetDays = repeatDays.split(/[,，、]/).map(d => dayMap[d.trim()]).filter(d => d !== undefined).sort();
+
+    const now = new Date();
+    const todayNum = now.getDay();
+
+    // 找這週內符合的日期
+    const dates = targetDays.map(d => {
+      const diff = d - todayNum;
+      const date = new Date(now);
+      date.setDate(now.getDate() + diff);
+      return date;
+    }).sort((a, b) => a - b);
+
+    // 如果這週的日期都已過，往下一週
+    const futureDates = dates.filter(d => {
+      const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return day >= today;
+    });
+
+    const displayDates = futureDates.length > 0 ? futureDates : dates.map(d => {
+      const next = new Date(d);
+      next.setDate(next.getDate() + 7);
+      return next;
+    });
+
+    if (displayDates.length === 1) {
+      const d = displayDates[0];
+      dateStr = `${d.getMonth()+1}/${d.getDate()}（台灣時間）`;
+    } else if (displayDates.length > 1) {
+      const first = displayDates[0];
+      const last = displayDates[displayDates.length - 1];
+      dateStr = `${first.getMonth()+1}/${first.getDate()} ～ ${last.getMonth()+1}/${last.getDate()}（台灣時間）`;
+    }
+  } else {
+    dateStr = formatDateRange(ev['開始日期'], ev['結束日期']);
+  }
+
+  const detailSection = detail ? `
+        <div class="detail-link" onclick="toggleExpand(this, event)">
+          詳細 <i class="detail-arrow">›</i>
+        </div>
+        <div class="event-expand">
+          <div class="event-expand-inner">
+            <p>${parseLinks(detail)}</p>
+          </div>
+        </div>` : '';
+
+  const scheduleBtn = hasSchedule
+    ? `<a href="${hasSchedule}" target="_blank" onclick="event.stopPropagation()"><button class="btn-schedule">賽事詳細</button></a>`
+    : '';
+
+  return `
+      <div class="event-card" data-tw="${isTW}" onclick="handleCardClick(this, event)" style="cursor:pointer;">
+        <div class="event-card-top">
+          <div class="event-card-left">
+            <div class="event-tags">${tags.join('')}</div>
+            <div class="event-name">${ev['名稱'] || ''}</div>
+            <div class="event-date">${dateStr}</div>
+          </div>
+          ${scheduleBtn}
+        </div>
+        ${shortDesc ? `<div class="event-desc">${shortDesc}</div>` : ''}
+        ${detailSection}
+      </div>`;
+}
+
+// 月份標籤（跨年時顯示年份）
+function getMonthLabel(dateVal) {
+  if (!dateVal) return '';
+  const d = dateVal instanceof Date ? dateVal : new Date(dateVal);
+  if (isNaN(d.getTime())) return '';
+  const thisYear = new Date().getFullYear();
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  return year !== thisYear ? `${year} 年 ${month} 月` : `${month} 月`;
+}
+
+// 月份分組 key（用於比較是否同一個月）
+function getMonthKey(dateVal) {
+  if (!dateVal) return '';
+  const d = dateVal instanceof Date ? dateVal : new Date(dateVal);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
+
+// ── 格鬥遊戲完整名稱對應（Twitch 顯示名稱）──
+const FGC_GAMES = [
+  // 主要遊戲
+  { key: 'sf6',   names: ['Street Fighter 6'] },
+  { key: 'kof',   names: ['THE KING OF FIGHTERS XV', 'The King of Fighters XV', "THE KING OF FIGHTERS '98", "The King of Fighters '98"] },
+  { key: 'cotw',  names: ['Fatal Fury: City of the Wolves'] },
+  { key: 'ggst',  names: ['GUILTY GEAR -STRIVE-', 'Guilty Gear: Strive'] },
+  { key: 'gbvsr', names: ['Granblue Fantasy Versus: Rising'] },
+  { key: 'tk8',   names: ['TEKKEN 8', 'Tekken 8'] },
+  // 小眾/懷舊/即將推出
+  { key: 'other_fgc', names: [
+    'Street Fighter V',
+    'Samurai Shodown',
+    '2XKO',
+    'Marvel Tōkon: Fighting Souls',
+    'Dragon Ball FighterZ',
+    'Under Night In-Birth II Sys:Celes',
+    'Melty Blood: Type Lumina',
+    'Mortal Kombat 1',
+    'MBlazBlue: Central Fiction',
+  ]},
+];
+
+// 取得遊戲對應的 chip key
+function getGameKey(gameName) {
+  if (!gameName) return null; // null 代表非格鬥遊戲
+  const name = gameName.trim();
+  for (const game of FGC_GAMES) {
+    if (game.names.some(n => name === n || name.includes(n) || n.includes(name))) {
+      return game.key;
+    }
+  }
+  return null; // null 代表非格鬥遊戲
+}
+
+// 是否為格鬥遊戲
+function isFightingGame(gameName) {
+  return getGameKey(gameName) !== null;
+}
+
+// 產生 offline 直播卡片 HTML
+function renderOfflineCard(streamer) {
+  const name = streamer['頻道名稱'] || '';
+  const game = streamer['主要遊戲'] || '';
+  const platform = streamer['平台'] || 'Twitch';
+  const twitchId = streamer['Twitch ID'] || '';
+  const gameKey = getGameKey(game);
+
+  const profileUrl = twitchId
+    ? `https://www.twitch.tv/${twitchId}`
+    : (streamer['YouTube ID'] ? `https://www.youtube.com/@${streamer['YouTube ID']}` : '#');
+
+  return `
+    <a href="${profileUrl}" target="_blank" style="text-decoration:none;">
+      <div class="live-card" data-game="${gameKey}" style="opacity:0.45;">
+        <div class="live-thumb">
+          <div class="live-thumb-placeholder" style="font-size:20px; opacity:0.4;">
+            ${platform === 'YouTube' ? '▶' : '◉'}
+          </div>
+        </div>
+        <div class="live-info">
+          <div class="live-name">${name}</div>
+          <div class="live-game">${game}</div>
+          <div class="live-platform"><span>${platform}</span></div>
+        </div>
+      </div>
+    </a>`;
+}
+
+// ── 載入直播狀態（從 Sheets 直播狀態分頁讀取，由 Apps Script 寫入）──
+async function loadLiveStatus() {
+  try {
+    // 同時讀取兩個分頁
+    const [streamers, liveStatuses] = await Promise.all([
+      fetchSheet('實況名單'),
+      fetchSheet('直播狀態'),
+    ]);
+
+    // 過濾顯示欄位
+    const visible = streamers.filter(s =>
+      s['顯示'] !== false && s['顯示'] !== 'FALSE' && s['顯示'] !== 0
+    );
+
+    // 建立直播狀態 Map（ID → 狀態）
+    const liveMap = {};
+    liveStatuses.forEach(row => {
+      const id = String(row['Twitch/YouTube ID'] || '').trim();
+      if (id) liveMap[id] = row;
+    });
+
+    // 分成在線和離線
+    const liveStreamers = [];
+    const offlineStreamers = [];
+
+    visible.forEach(s => {
+      const twitchId = String(s['Twitch ID'] || '').trim();
+      const ytId = String(s['YouTube ID'] || '').trim();
+      const statusId = twitchId || ytId;
+      const status = liveMap[statusId] || liveMap[twitchId] || liveMap[ytId];
+      const isOnline = status && (status['是否在線'] === 'TRUE' || status['是否在線'] === true);
+      const currentGame = status ? String(status['當前遊戲'] || '').trim() : '';
+
+      // 在線且在玩格鬥遊戲才進 LIVE 區塊，否則歸 offline
+      if (isOnline && isFightingGame(currentGame)) {
+        liveStreamers.push({ ...s, _status: status });
+      } else {
+        offlineStreamers.push(s);
+      }
+    });
+
+    // 隨機排序
+    [liveStreamers, offlineStreamers].forEach(arr => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    });
+
+    // 分出精選頻道，依觀看人數排序，官方台和非官方台各取最高的
+    // 若有多場比賽，依「精選賽事」欄位對應當前顯示的比賽
+    const sortByViewers = arr => [...arr].sort((a, b) => {
+      const va = Number((a._status || {})['觀看人數'] || 0);
+      const vb = Number((b._status || {})['觀看人數'] || 0);
+      return vb - va;
+    });
+
+    const currentEventName = window._currentLiveEvent ? (window._currentLiveEvent['名稱'] || '') : '';
+    const hasMultipleEvents = window._liveEvents && window._liveEvents.length > 1;
+
+    // 篩選精選頻道：若有多場比賽，只取「精選賽事」欄位對應當前比賽的頻道
+    // 只有一場比賽或「精選賽事」為空時，不限制
+    function matchesCurrentEvent(s) {
+      if (!hasMultipleEvents) return true;
+      const featuredEvent = (s['精選賽事'] || '').trim();
+      return !featuredEvent || featuredEvent === currentEventName;
+    }
+
+    const featuredWatchParty = sortByViewers(
+      liveStreamers.filter(s =>
+        (s['精選'] === true || s['精選'] === 'TRUE') &&
+        s['官方台'] !== true && s['官方台'] !== 'TRUE' && s['官方台'] !== '賽事主台' &&
+        matchesCurrentEvent(s)
+      )
+    )[0] || null;
+
+    const featuredOfficial = sortByViewers(
+      liveStreamers.filter(s =>
+        (s['精選'] === true || s['精選'] === 'TRUE') &&
+        (s['官方台'] === true || s['官方台'] === 'TRUE' || s['官方台'] === '賽事主台') &&
+        matchesCurrentEvent(s)
+      )
+    )[0] || null;
+
+    // 排除 Hero 頻道不出現在其他直播橫向滑動
+    const heroIds = [featuredWatchParty, featuredOfficial]
+      .filter(Boolean)
+      .map(s => String(s['Twitch ID'] || s['YouTube ID'] || '').trim());
+    const otherLive = liveStreamers.filter(s => {
+      const id = String(s['Twitch ID'] || s['YouTube ID'] || '').trim();
+      return !heroIds.includes(id);
+    });
+
+    // Hero 區：分別傳入觀賽派對精選和官方台精選
+    updateHeroTabs(featuredWatchParty, featuredOfficial);
+
+    // ── 橫向滑動區 ──
+    const hasLiveEvent = !!(window._currentLiveEvent);
+
+    if (hasLiveEvent) {
+      // 觀賽直播 = 所有精選非官方台（不限賽事，全放一起）
+      const allWatchParty = liveStreamers.filter(s =>
+        (s['精選'] === true || s['精選'] === 'TRUE') &&
+        s['官方台'] !== true && s['官方台'] !== 'TRUE' && s['官方台'] !== '賽事主台'
+      );
+      updateHomeScroll(allWatchParty, true, true);
+
+      // 官方主台 = 所有精選官方台（多個才顯示這列）
+      const allOfficial = liveStreamers.filter(s =>
+        (s['精選'] === true || s['精選'] === 'TRUE') &&
+        (s['官方台'] === true || s['官方台'] === 'TRUE' || s['官方台'] === '賽事主台')
+      );
+      updateOfficialScroll(allOfficial);
+    } else {
+      // 沒有進行中賽事：LIVE 列顯示所有在線的
+      updateHomeScroll(liveStreamers, false, true);
+      // 隱藏官方主台列
+      const officialSection = document.getElementById('home-official-scroll-section');
+      if (officialSection) officialSection.style.display = 'none';
+    }
+
+    // 快取 liveStreamers 供切換比賽時重用
+    window._cachedLiveStreamers = liveStreamers;
+
+    renderLiveSection(liveStreamers);
+    renderOfflineSection(offlineStreamers, visible.length);
+
+  } catch(e) {
+    console.error('載入直播狀態失敗', e);
+  }
+}
+
+// ── 建立 Hero 輪播軌道 ──
+function buildHeroTrack(liveEvents) {
+  const track = document.getElementById('hero-track');
+  const heroNav = document.getElementById('hero-nav');
+  const heroNavDots = document.getElementById('hero-nav-dots');
+  if (!track) return;
+
+  // 為每場比賽建立一張 slide
+  track.innerHTML = liveEvents.map((ev, i) => {
+    const name = ev['名稱'] || '';
+    const fallbackImg = ev['替代圖片'] || '';
+    const bgStyle = fallbackImg
+      ? `background-image:url(${fallbackImg});background-size:cover;background-position:center;`
+      : 'background: linear-gradient(135deg, #1a2240 0%, #0d1830 50%, #1a2840 100%);';
+
+    return `
+      <div class="hero-slide${i === 0 ? ' active' : ''}" data-index="${i}">
+        <div class="tabs" id="hero-tabs-${i}">
+          <div class="tab active" onclick="switchHeroTab(this,'hot',${i})">熱門直播</div>
+          <div class="tab" onclick="switchHeroTab(this,'official',${i})">賽事主台</div>
+        </div>
+        <div class="hero hero-panel" id="hero-hot-${i}">
+          <div class="hero-img" id="hero-img-hot-${i}" style="${bgStyle}">
+            <div class="hero-art" id="hero-art-${i}">${name.split(' ')[0] || 'FGC'}</div>
+            <div class="hero-gradient"></div>
+          </div>
+          <div class="hero-content" id="hero-hot-content-${i}">
+            <div class="hero-event-name">${name}</div>
+            <div class="hero-sub"><span class="hero-live-badge">LIVE</span> 載入中…</div>
+          </div>
+        </div>
+        <div class="hero hero-panel" id="hero-official-${i}" style="display:none;">
+          <div class="hero-img" id="hero-img-official-${i}" style="background:linear-gradient(135deg,#1a1030,#0d0820);">
+            <div class="hero-art" id="hero-official-art-${i}">${name.split(' ')[0] || 'FGC'}</div>
+            <div class="hero-gradient"></div>
+          </div>
+          <div class="hero-content" id="hero-official-content-${i}">
+            <div class="hero-event-name">${name}（官方主台）</div>
+            <div class="hero-sub"><span class="hero-live-badge">LIVE</span> 載入中…</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // 點點
+  if (liveEvents.length > 1) {
+    heroNav.style.display = '';
+    heroNavDots.innerHTML = liveEvents.map((_, i) =>
+      `<button class="hero-nav-dot${i === 0 ? ' active' : ''}" onclick="jumpHeroEvent(${i})"></button>`
+    ).join('');
+  } else {
+    heroNav.style.display = 'none';
+  }
+
+  // 初始化 touch 滑動
+  initHeroSwipe(track, liveEvents.length);
+}
+
+// ── Touch 滑動支援 ──
+function initHeroSwipe(track, total) {
+  let startX = 0;
+  let isDragging = false;
+
+  track.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  }, { passive: true });
+
+  track.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      const dir = diff > 0 ? 1 : -1;
+      const next = Math.max(0, Math.min(total - 1, window._heroEventIndex + dir));
+      jumpHeroEvent(next);
+    }
+  }, { passive: true });
+}
+
+// 重新計算這場比賽對應的精選頻道
+function updateHeroForEvent(liveStreamers) {
+  const currentEventName = window._currentLiveEvent ? (window._currentLiveEvent['名稱'] || '') : '';
+  const hasMultipleEvents = window._liveEvents && window._liveEvents.length > 1;
+
+  function matchesCurrentEvent(s) {
+    if (!hasMultipleEvents) return true;
+    const featuredEvent = (s['精選賽事'] || '').trim();
+    return !featuredEvent || featuredEvent === currentEventName;
+  }
+
+  const sortByViewers = arr => [...arr].sort((a, b) => {
+    const va = Number((a._status || {})['觀看人數'] || 0);
+    const vb = Number((b._status || {})['觀看人數'] || 0);
+    return vb - va;
+  });
+
+  const featuredWatchParty = sortByViewers(
+    liveStreamers.filter(s =>
+      (s['精選'] === true || s['精選'] === 'TRUE') &&
+      s['官方台'] !== true && s['官方台'] !== 'TRUE' && s['官方台'] !== '賽事主台' &&
+      matchesCurrentEvent(s)
+    )
+  )[0] || null;
+
+  const featuredOfficial = sortByViewers(
+    liveStreamers.filter(s =>
+      (s['精選'] === true || s['精選'] === 'TRUE') &&
+      (s['官方台'] === true || s['官方台'] === 'TRUE' || s['官方台'] === '賽事主台') &&
+      matchesCurrentEvent(s)
+    )
+  )[0] || null;
+
+  updateHeroTabs(featuredWatchParty, featuredOfficial);
+}
+
+function renderLiveCard(s) {
+  const name = s['頻道名稱'] || s['Twitch ID'] || s['YouTube ID'] || '未知頻道';
+  const status = s._status || {};
+  const game = status['當前遊戲'] || s['主要遊戲'] || '';
+  const title = status['直播標題'] || '';
+  const platform = status['平台'] || s['平台'] || '';
+  const twitchId = String(s['Twitch ID'] || '').trim();
+  const ytId = String(s['YouTube ID'] || '').trim();
+  const thumbUrl = status['縮圖 URL'] || '';
+  const avatarUrl = status['頭貼 URL'] || '';
+
+  let profileUrl = '#';
+  if (platform === 'Twitch' && twitchId) profileUrl = `https://www.twitch.tv/${twitchId}`;
+  else if (platform === 'YouTube' && ytId) profileUrl = `https://www.youtube.com/@${ytId}`;
+
+  return `
+    <a href="${profileUrl}" target="_blank" style="text-decoration:none;">
+      <div class="live-card" data-game="${getGameKey(game) || 'other'}">
+        <div class="live-thumb">
+          ${avatarUrl
+            ? `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">`
+            : `<div class="live-thumb-placeholder" style="font-size:24px;">🎮</div>`}
+          <div class="live-dot">LIVE</div>
+        </div>
+        <div class="live-info">
+          <div class="live-name">${name}</div>
+          ${title ? `<div class="live-card-title">${title}</div>` : ''}
+          <div class="live-game">${game}</div>
+          <div class="live-platform"><span>${platform}</span></div>
+        </div>
+      </div>
+    </a>`;
+}
+
+
+
+
+
+// ── Hero 區：有精選直播時顯示直播，沒有時顯示賽事 ──
+// ── 協調函式：先顯示賽事 Hero，直播狀態載入後再更新 ──
+async function loadHeroThenLive() {
+  // 先載入賽事 Hero（快，讓使用者立刻看到東西）
+  await loadHero();
+
+  // 再載入直播狀態（需要查 Sheets 兩個分頁）
+  await loadLiveStatus();
+
+  // 判定完成後顯示 Hero 區
+  const heroContainer = document.getElementById('hero-container');
+  setTimeout(() => {
+    if (heroContainer) heroContainer.classList.add('ready');
+  }, 2500);
+}
+
+// ── Hero 區：分別更新熱門直播／賽事主台兩個頁籤 ──
+async function updateHeroTabs(watchPartyStreamer, officialStreamer) {
+  if (!window._currentLiveEvent) return;
+
+  const idx = window._heroEventIndex || 0;
+  const needsCopyright = window._currentLiveEvent['需要轉播權'] === true ||
+    window._currentLiveEvent['需要轉播權'] === 'TRUE';
+
+  const tabContainer = document.getElementById(`hero-tabs-${idx}`);
+  const tabHot = tabContainer ? tabContainer.querySelector('.tab:nth-child(1)') : null;
+  const tabOfficial = tabContainer ? tabContainer.querySelector('.tab:nth-child(2)') : null;
+  const heroHot = document.getElementById(`hero-hot-${idx}`);
+  const heroOfficial = document.getElementById(`hero-official-${idx}`);
+
+  if (watchPartyStreamer) {
+    if (tabHot) { tabHot.style.display = ''; tabHot.classList.add('active'); }
+    if (heroHot) heroHot.style.display = '';
+    renderHeroPanel(`hero-hot-${idx}`, watchPartyStreamer, needsCopyright, idx);
+  } else {
+    if (tabHot) { tabHot.style.display = 'none'; tabHot.classList.remove('active'); }
+    if (heroHot) heroHot.style.display = 'none';
+  }
+
+  if (officialStreamer) {
+    if (tabOfficial) { tabOfficial.style.display = ''; }
+    renderHeroPanel(`hero-official-${idx}`, officialStreamer, needsCopyright, idx);
+  } else {
+    if (tabOfficial) { tabOfficial.style.display = 'none'; }
+    if (heroOfficial) heroOfficial.style.display = 'none';
+  }
+
+  if (watchPartyStreamer) {
+    if (heroHot) heroHot.style.display = '';
+    if (heroOfficial) heroOfficial.style.display = 'none';
+    if (tabHot) tabHot.classList.add('active');
+    if (tabOfficial) tabOfficial.classList.remove('active');
+  } else if (officialStreamer) {
+    if (heroHot) heroHot.style.display = 'none';
+    if (heroOfficial) heroOfficial.style.display = '';
+    if (tabOfficial) tabOfficial.classList.add('active');
+    if (tabHot) tabHot.classList.remove('active');
+  }
+
+  if (tabContainer) tabContainer.style.display = (watchPartyStreamer || officialStreamer) ? '' : 'none';
+}
+
+// 渲染 Hero 面板
+function renderHeroPanel(panelId, streamer, needsCopyright, slideIdx) {
+  const idx = slideIdx !== undefined ? slideIdx : (window._heroEventIndex || 0);
+  const status = streamer._status || {};
+  const name = streamer['頻道名稱'] || streamer['Twitch ID'] || '';
+  const game = status['當前遊戲'] || streamer['主要遊戲'] || '';
+  const thumbUrl = status['縮圖 URL'] || '';
+  const avatarUrl = status['頭貼 URL'] || '';
+  const eventName = window._currentLiveEvent ? (window._currentLiveEvent['名稱'] || '') : '';
+  const fallbackImg = window._currentLiveEvent ? (window._currentLiveEvent['替代圖片'] || '') : '';
+  const twitchId = String(streamer['Twitch ID'] || '').trim();
+  const ytId = String(streamer['YouTube ID'] || '').trim();
+  const platform = status['平台'] || streamer['平台'] || '';
+  const isHot = !panelId.includes('official');
+  const panelLabel = panelId.includes('official') ? '（官方主台）' : '';
+
+  // 頻道連結
+  let streamUrl = '#';
+  if (platform === 'Twitch' && twitchId) streamUrl = `https://www.twitch.tv/${twitchId}`;
+  else if (platform === 'YouTube' && ytId) streamUrl = `https://www.youtube.com/@${ytId}`;
+
+  // 決定背景圖片
+  const heroImg = document.getElementById(isHot ? `hero-img-hot-${idx}` : `hero-img-official-${idx}`);
+  const artEl = document.getElementById(isHot ? `hero-art-${idx}` : `hero-official-art-${idx}`);
+
+  if (heroImg) {
+    if (needsCopyright) {
+      // 需要轉播權 → 替代圖片（縮小高度），沒有替代圖片就用頭貼
+      const bgImg = fallbackImg || avatarUrl;
+      if (bgImg) {
+        heroImg.style.backgroundImage = `url(${bgImg})`;
+        heroImg.style.backgroundSize = 'cover';
+        heroImg.style.backgroundPosition = 'center';
+      }
+      heroImg.classList.add('compact'); // 縮小高度
+    } else {
+      // 不需要轉播權 → 直播縮圖（沒有就用頭貼）
+      const bgImg = (thumbUrl && thumbUrl !== '-') ? thumbUrl : avatarUrl;
+      if (bgImg) {
+        heroImg.style.backgroundImage = `url(${bgImg})`;
+        heroImg.style.backgroundSize = 'cover';
+        heroImg.style.backgroundPosition = 'center';
+      }
+      heroImg.classList.remove('compact');
+    }
+    if (artEl) artEl.style.display = 'none';
+  }
+
+  const contentId = isHot ? `hero-hot-content-${idx}` : `hero-official-content-${idx}`;
+  const contentEl = document.getElementById(contentId);
+  if (contentEl) {
+    contentEl.innerHTML = `
+      <div class="hero-event-name">${eventName}${panelLabel}</div>
+      ${game ? `<div style="font-size:12px;color:var(--text2);margin-top:3px;">${game}</div>` : ''}
+      <div class="hero-bottom-row">
+        <div class="hero-streamer-row">
+          ${avatarUrl ? `<img src="${avatarUrl}" class="hero-avatar" onerror="this.style.display='none'">` : ''}
+          <div>
+            <span class="hero-streamer-name">${name}</span>
+            <span class="hero-watching-label">觀賽中</span>
+          </div>
+        </div>
+        <a href="${streamUrl}" target="_blank" style="flex-shrink:0;text-decoration:none;"><button class="btn-primary" style="white-space:nowrap;">一起看 →</button></a>
+      </div>`;
+  }
+}
+
+// ── 其他直播橫向滑動 ──
+// hasLiveEvent: 是否有進行中賽事
+// showMore: 是否顯示「看更多」
+function updateHomeScroll(streamers, hasLiveEvent, showMore) {
+  const section = document.getElementById('home-live-scroll-section');
+  const scroll = document.getElementById('home-live-scroll');
+  const titleEl = document.getElementById('home-scroll-title');
+  const dotEl = document.getElementById('home-scroll-dot');
+  const moreEl = document.getElementById('home-scroll-more');
+  if (!section || !scroll) return;
+
+  if (streamers.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  // 更新標題和控制元素
+  if (hasLiveEvent) {
+    if (titleEl) titleEl.textContent = '觀賽直播';
+    if (dotEl) dotEl.style.display = 'none';
+    if (moreEl) moreEl.style.display = 'none';
+  } else {
+    if (titleEl) titleEl.textContent = 'LIVE';
+    if (dotEl) dotEl.style.display = '';
+    if (moreEl) moreEl.style.display = showMore ? '' : 'none';
+  }
+
+  // 是否需要轉播權（影響縮圖/頭貼選擇）
+  const needsCopyright = window._currentLiveEvent &&
+    (window._currentLiveEvent['需要轉播權'] === true || window._currentLiveEvent['需要轉播權'] === 'TRUE');
+
+  scroll.innerHTML = streamers.map(s => {
+    const status = s._status || {};
+    const name = s['頻道名稱'] || s['Twitch ID'] || '';
+    const game = status['當前遊戲'] || s['主要遊戲'] || '';
+    const thumbUrl = status['縮圖 URL'] || '';
+    const avatarUrl = status['頭貼 URL'] || '';
+    const platform = status['平台'] || s['平台'] || '';
+    const twitchId = String(s['Twitch ID'] || '').trim();
+    const ytId = String(s['YouTube ID'] || '').trim();
+    let url = '#';
+    if (platform === 'Twitch' && twitchId) url = `https://www.twitch.tv/${twitchId}`;
+    else if (platform === 'YouTube' && ytId) url = `https://www.youtube.com/@${ytId}`;
+
+    // 依轉播權決定顯示縮圖或頭貼
+    const imgUrl = (hasLiveEvent && needsCopyright)
+      ? avatarUrl
+      : (thumbUrl && thumbUrl !== '-' ? thumbUrl : avatarUrl);
+
+    return `
+      <a href="${url}" target="_blank" style="text-decoration:none;">
+        <div class="live-scroll-card">
+          <div class="live-scroll-thumb">
+            ${imgUrl
+              ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;">`
+              : `<span style="font-size:28px;color:rgba(255,255,255,0.15);">🎮</span>`}
+            <div class="live-dot">LIVE</div>
+          </div>
+          <div class="live-scroll-info">
+            <div class="live-scroll-name">${name}</div>
+            <div class="live-scroll-game">${game}</div>
+          </div>
+        </div>
+      </a>`;
+  }).join('');
+
+  section.style.display = '';
+}
+
+// ── 官方主台橫向滑動（多個官方台時才顯示）──
+function updateOfficialScroll(streamers) {
+  const section = document.getElementById('home-official-scroll-section');
+  const scroll = document.getElementById('home-official-scroll');
+  if (!section || !scroll) return;
+
+  // 只有兩個以上官方台才顯示這列
+  if (streamers.length < 2) {
+    section.style.display = 'none';
+    return;
+  }
+
+  const needsCopyright = window._currentLiveEvent &&
+    (window._currentLiveEvent['需要轉播權'] === true || window._currentLiveEvent['需要轉播權'] === 'TRUE');
+
+  scroll.innerHTML = streamers.map(s => {
+    const status = s._status || {};
+    const name = s['頻道名稱'] || s['Twitch ID'] || '';
+    const game = status['當前遊戲'] || s['主要遊戲'] || '';
+    const thumbUrl = status['縮圖 URL'] || '';
+    const avatarUrl = status['頭貼 URL'] || '';
+    const platform = status['平台'] || s['平台'] || '';
+    const twitchId = String(s['Twitch ID'] || '').trim();
+    const ytId = String(s['YouTube ID'] || '').trim();
+    let url = '#';
+    if (platform === 'Twitch' && twitchId) url = `https://www.twitch.tv/${twitchId}`;
+    else if (platform === 'YouTube' && ytId) url = `https://www.youtube.com/@${ytId}`;
+
+    // 依轉播權決定顯示縮圖或頭貼
+    const imgUrl = needsCopyright
+      ? avatarUrl
+      : (thumbUrl && thumbUrl !== '-' ? thumbUrl : avatarUrl);
+
+    return `
+      <a href="${url}" target="_blank" style="text-decoration:none;">
+        <div class="live-scroll-card">
+          <div class="live-scroll-thumb">
+            ${imgUrl
+              ? `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;">`
+              : `<span style="font-size:28px;color:rgba(255,255,255,0.15);">🎮</span>`}
+            <div class="live-dot">LIVE</div>
+          </div>
+          <div class="live-scroll-info">
+            <div class="live-scroll-name">${name}</div>
+            <div class="live-scroll-game">${game}</div>
+          </div>
+        </div>
+      </a>`;
+  }).join('');
+
+  section.style.display = '';
+}
+
+function renderLiveSection(liveStreamers) {
+  const livePage = document.querySelector('#page-live .content');
+  if (!livePage) return;
+
+  // 移除舊的卡片和小標題（不在 offline-list 裡的）
+  livePage.querySelectorAll('.live-card:not(.offline-list .live-card), .live-sub-label').forEach(el => {
+    const parent = el.closest('a') || el;
+    parent.remove();
+  });
+
+  const offlineSection = document.getElementById('offline-section');
+  const hasLiveEvent = !!(window._currentLiveEvent);
+
+  const insertBefore = (el) => {
+    if (offlineSection) livePage.insertBefore(el, offlineSection);
+    else livePage.appendChild(el);
+  };
+
+  if (liveStreamers.length === 0) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'loading-placeholder';
+    emptyMsg.style.padding = '20px 18px';
+    emptyMsg.textContent = '目前沒有直播';
+    insertBefore(emptyMsg);
+    return;
+  }
+
+  if (hasLiveEvent) {
+    // 有進行中賽事：分成「共同觀賽」和其他直播
+    const watchParty = liveStreamers.filter(s =>
+      s['精選'] === true || s['精選'] === 'TRUE'
+    );
+    const others = liveStreamers.filter(s =>
+      s['精選'] !== true && s['精選'] !== 'TRUE'
+    );
+
+    if (watchParty.length > 0) {
+      const label = document.createElement('div');
+      label.className = 'live-sub-label';
+      label.textContent = '共同觀賽';
+      insertBefore(label);
+      watchParty.forEach(s => {
+        const div = document.createElement('div');
+        div.innerHTML = renderLiveCard(s);
+        insertBefore(div.firstElementChild);
+      });
+    }
+
+    if (others.length > 0) {
+      const label = document.createElement('div');
+      label.className = 'live-sub-label';
+      label.textContent = '其他直播';
+      insertBefore(label);
+      others.forEach(s => {
+        const div = document.createElement('div');
+        div.innerHTML = renderLiveCard(s);
+        insertBefore(div.firstElementChild);
+      });
+    }
+  } else {
+    // 沒有進行中賽事：直接列出所有直播
+    liveStreamers.forEach(s => {
+      const div = document.createElement('div');
+      div.innerHTML = renderLiveCard(s);
+      insertBefore(div.firstElementChild);
+    });
+  }
+}
+
+function renderOfflineSection(offlineStreamers, totalCount) {
+  const toggleLabel = document.querySelector('.offline-toggle-label');
+  if (toggleLabel) {
+    toggleLabel.innerHTML = `OFFLINE <span style="color:var(--text3);font-weight:400;font-size:10px;text-transform:none;letter-spacing:0;">(${offlineStreamers.length})</span> <i class="offline-arrow">›</i>`;
+  }
+  const offlineList = document.getElementById('offline-list');
+  if (offlineList) {
+    offlineList.innerHTML = offlineStreamers.map(s => renderOfflineCard(s)).join('');
+  }
+}
+
+// ── 載入實況名單 ──
+async function loadStreamers() {
+  try {
+    const streamers = await fetchSheet('實況名單');
+    const visible = streamers.filter(s =>
+      s['顯示'] !== false && s['顯示'] !== 'FALSE' && s['顯示'] !== 0
+    );
+
+    // 隨機排序
+    for (let i = visible.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [visible[i], visible[j]] = [visible[j], visible[i]];
+    }
+
+    const offlineList = document.getElementById('offline-list');
+    const offlineCount = document.getElementById('offline-count');
+
+    if (offlineList) {
+      offlineList.innerHTML = visible.map(s => renderOfflineCard(s)).join('');
+    }
+    if (offlineCount) {
+      offlineCount.textContent = `(${visible.length})`;
+    }
+
+  } catch(e) {
+    console.error('載入實況名單失敗', e);
+    const el = document.getElementById('offline-list');
+    if (el) el.innerHTML = '<div class="error-placeholder">資料載入失敗</div>';
+  }
+}
+
+// ── 載入首頁賽事 ──
+async function loadHomeEvents() {
+  try {
+    const events = await fetchSheet('賽事');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // 過濾顯示欄位
+    const visible = events.filter(ev =>
+      ev['顯示'] !== false && ev['顯示'] !== 'FALSE' && ev['顯示'] !== 0
+    );
+
+    // 現正進行中（自動依日期判斷）
+    const liveEvs = visible.filter(ev => isEventLive(ev));
+    const liveSection = document.getElementById('home-live-section');
+    const liveContainer = document.getElementById('home-live-events');
+    if (liveSection && liveContainer) {
+      if (liveEvs.length === 0) {
+        liveSection.style.display = 'none';
+      } else {
+        liveSection.style.display = '';
+        liveContainer.innerHTML = liveEvs.map(ev => renderEventCard(ev, false)).join('');
+      }
+    }
+
+    // 近期賽事（所有分類，未來 30 天內，最多 6 筆）
+    const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const upcomingEvs = visible
+      .filter(ev => {
+        if (isEventLive(ev)) return false; // 進行中的不放近期賽事
+        const start = ev['開始日期'] instanceof Date ? ev['開始日期'] : (ev['開始日期'] ? new Date(ev['開始日期']) : null);
+        const end = ev['結束日期'] instanceof Date ? ev['結束日期'] : (ev['結束日期'] ? new Date(ev['結束日期']) : null);
+        if (!start) return false;
+        if (end && end < today) return false; // 已結束
+        return start <= thirtyDaysLater; // 30 天內開始
+      })
+      .sort((a, b) => {
+        const da = a['開始日期'] instanceof Date ? a['開始日期'] : new Date(a['開始日期'] || 0);
+        const db = b['開始日期'] instanceof Date ? b['開始日期'] : new Date(b['開始日期'] || 0);
+        return da - db;
+      })
+      .slice(0, 6);
+
+    const upcomingContainer = document.getElementById('home-upcoming-events');
+    if (upcomingContainer) {
+      if (upcomingEvs.length === 0) {
+        upcomingContainer.innerHTML = '<div class="loading-placeholder" style="padding:12px 18px;">近期沒有賽事</div>';
+      } else {
+        upcomingContainer.innerHTML = upcomingEvs.map(ev => renderEventCard(ev, false)).join('');
+      }
+    }
+  } catch(e) {
+    console.error('載入首頁賽事失敗', e);
+    const containers = ['home-live-events', 'home-upcoming-events'];
+    containers.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div class="error-placeholder">資料載入失敗，請稍後再試</div>';
+    });
+  }
+}
+
+// ── 載入賽事頁 ──
+async function loadEventsPage() {
+  try {
+    const events = await fetchSheet('賽事');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const visible = events.filter(ev =>
+      ev['顯示'] !== false && ev['顯示'] !== 'FALSE' && ev['顯示'] !== 0
+    );
+
+    // 焦點大賽（依月份分組）
+    const featured = visible.filter(ev => {
+      const cat = ev['分類'] || '';
+      const end = ev['結束日期'] ? new Date(ev['結束日期']) : null;
+      const valid = !end || end >= today;
+      return cat === '焦點大賽' && valid;
+    });
+
+    const featuredContainer = document.getElementById('events-featured');
+    if (featuredContainer) {
+      if (featured.length === 0) {
+        featuredContainer.innerHTML = '<div class="loading-placeholder">目前沒有焦點大賽</div>';
+      } else {
+        // 依開始日期排序（由近到遠）
+        featured.sort((a, b) => {
+          const da = a['開始日期'] instanceof Date ? a['開始日期'] : new Date(a['開始日期'] || 0);
+          const db = b['開始日期'] instanceof Date ? b['開始日期'] : new Date(b['開始日期'] || 0);
+          return da - db;
+        });
+        // 依年月分組
+        let html = '';
+        let currentKey = '';
+        featured.forEach(ev => {
+          const key = getMonthKey(ev['開始日期']);
+          if (key && key !== currentKey) {
+            html += `<div class="month-label">${getMonthLabel(ev['開始日期'])}</div>`;
+            currentKey = key;
+          }
+          html += renderEventCard(ev, false);
+        });
+        featuredContainer.innerHTML = html;
+      }
+    }
+
+    // 社群&聯賽
+    const community = visible.filter(ev => {
+      const cat = ev['分類'] || '';
+      return cat === '社群' || cat === '聯賽';
+    });
+
+    const commContainer = document.getElementById('events-community-cards');
+    if (commContainer) {
+      const leagues = community.filter(ev => ev['分類'] === '聯賽');
+      const socials = community.filter(ev => ev['分類'] === '社群');
+
+      let html = '';
+      if (leagues.length > 0) {
+        html += leagues.map(ev => renderEventCard(ev, false)).join('');
+      }
+      // 社群子標題
+      const socialSection = document.getElementById('events-social-cards');
+      if (socialSection) {
+        socialSection.innerHTML = socials.map(ev => renderEventCard(ev, false)).join('') ||
+          '<div class="loading-placeholder" style="padding:12px 18px;">目前沒有社群賽事</div>';
+      }
+      commContainer.innerHTML = html || '<div class="loading-placeholder" style="padding:12px 18px;">目前沒有聯賽</div>';
+    }
+
+  } catch(e) {
+    console.error('載入賽事頁失敗', e);
+    const el = document.getElementById('events-featured');
+    if (el) el.innerHTML = '<div class="error-placeholder">資料載入失敗，請稍後再試</div>';
+  }
+}
+
+// ── 初始化 ──
+document.addEventListener('DOMContentLoaded', function() {
+  // Headroom
+  document.querySelectorAll('.page').forEach(function(page) {
+    var contentEl = page.querySelector('.content');
+    var header = page.querySelector('header');
+    if (contentEl && header) setupHeadroom(contentEl, header);
+  });
+  // 初始頁面
+  renderSharedUI();
+  initPageFromHash();
+  // 資料載入（順序重要）
+  loadHomeEvents();
+  loadEventsPage();
+  loadBanners();
+  loadHeroThenLive();
+  shuffleLiveCards();
+  // 瀏覽器上一頁/下一頁
+  window.addEventListener('popstate', initPageFromHash);
+
+  // ── 自動重新整理 ──
+
+  // 直播狀態：每 10 分鐘（跟 Apps Script 同步）
+  setInterval(() => {
+    loadHeroThenLive();
+    updateLastUpdated();
+  }, 10 * 60 * 1000);
+
+  // 賽事資料：對準每小時的 X:10 和 X:40
+  function scheduleEventRefresh() {
+    const now = new Date();
+    const min = now.getMinutes();
+    const sec = now.getSeconds();
+    const ms = now.getMilliseconds();
+
+    // 計算距離下一個 X:10 或 X:40 的毫秒數
+    let nextMin;
+    if (min < 10) nextMin = 10;
+    else if (min < 40) nextMin = 40;
+    else nextMin = 70; // 下一個小時的 X:10
+
+    const waitMs = ((nextMin - min) * 60 - sec) * 1000 - ms;
+
+    setTimeout(() => {
+      loadHomeEvents();
+      loadEventsPage();
+      loadBanners();
+      updateLastUpdated();
+      // 之後每 30 分鐘重複
+      setInterval(() => {
+        loadHomeEvents();
+        loadEventsPage();
+        loadBanners();
+        updateLastUpdated();
+      }, 30 * 60 * 1000);
+    }, waitMs);
+  }
+  scheduleEventRefresh();
+
+  // 初始顯示最後更新時間
+  updateLastUpdated();
+});
+
+// ── PWA Service Worker 註冊 ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('Service Worker 已註冊'))
+      .catch(e => console.log('Service Worker 註冊失敗:', e));
+  });
+}
+
+function updateLastUpdated() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const timeStr = `${hh}:${mm}`;
+  document.querySelectorAll('.last-updated-time').forEach(el => {
+    el.textContent = timeStr;
+  });
+}
+
+
+</script>
+</body>
+</html>
