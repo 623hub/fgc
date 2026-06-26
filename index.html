@@ -1917,7 +1917,7 @@ async function loadHero() {
       const officialContent = document.getElementById(`hero-official-content-${i}`);
       if (officialContent) {
         officialContent.innerHTML = `
-          <div class="hero-event-name">${evName}（官方主台）</div>
+          <div class="hero-event-name">${evName}</div>
           <div class="hero-sub">
             <span class="hero-live-badge">LIVE</span>
             目前無官方轉播
@@ -2016,7 +2016,7 @@ function refreshHeroContent(liveEvent) {
   const officialContent = document.getElementById(`hero-official-content-${idx}`);
   if (officialContent) {
     officialContent.innerHTML = `
-      <div class="hero-event-name">${name}（官方主台）</div>
+      <div class="hero-event-name">${name}</div>
       <div class="hero-sub"><span class="hero-live-badge">LIVE</span> 目前無官方轉播</div>
       <div class="hero-cta">
         ${scheduleUrl ? `<a href="${scheduleUrl}" target="_blank"><button class="btn-primary">賽事詳細 →</button></a>` : ''}
@@ -2638,7 +2638,7 @@ function buildHeroTrack(liveEvents) {
     return `
       <div class="hero-slide${i === 0 ? ' active' : ''}" data-index="${i}">
         <div class="tabs" id="hero-tabs-${i}">
-          <div class="tab active" onclick="switchHeroTab(this,'hot',${i})">熱門直播</div>
+          <div class="tab active" onclick="switchHeroTab(this,'hot',${i})">共同觀賽</div>
           <div class="tab" onclick="switchHeroTab(this,'official',${i})">賽事主台</div>
         </div>
         <div class="hero hero-panel" id="hero-hot-${i}">
