@@ -2189,17 +2189,49 @@ function renderSharedUI() {
 // ════════════════════════════════════════════
 const SHEETS_ID = '1MBU9FQYsPqEwSgdAjmfxzOETK8vmBPY_JeNkP6vNgCw';
 
+// ── 解析「開始時間」欄位（支援 HH:MM 或 H:MM 格式）──
+// 回傳 { hour, minute } 或 null
+function parseStartTime(timeStr) {
+  if (!timeStr) return null;
+  const s = String(timeStr).trim();
+  const match = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return { hour, minute };
+}
+
 // ── 賽事「現正進行中」自動判斷 ──
 // 取代手動勾選的「進行中」欄位，根據日期和重複星期自動計算
+// 若有「開始時間」欄位（HH:MM），到了該時間才算進行中
 function isEventLive(ev, now) {
   now = now || new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 今天 00:00
-  const todayEnd = new Date(today.getTime() + 24*60*60*1000 - 1); // 今天 23:59:59
 
   const start = ev['開始日期'] instanceof Date ? ev['開始日期'] : (ev['開始日期'] ? new Date(ev['開始日期']) : null);
   const end = ev['結束日期'] instanceof Date ? ev['結束日期'] : (ev['結束日期'] ? new Date(ev['結束日期']) : null);
   const repeatType = (ev['重複類型'] || '').trim();
   const repeatDays = (ev['重複星期'] || '').trim(); // 例如「四」「六,日」
+
+  // ── 解析開始時間（可選）──
+  const startTime = parseStartTime(ev['開始時間'] || '');
+  // 結束時間（可選）：若設了開始時間又設了結束時間，進行中區間為 [開始時間, 結束時間)
+  // 若只有開始時間沒有結束時間，到了開始時間即算進行中，直到當天結束
+  const endTime = parseStartTime(ev['結束時間'] || '');
+
+  // 判斷「現在」是否在 [startTime, endTime) 區間內（同一天）
+  function isNowInTimeRange() {
+    if (!startTime) return true; // 沒設時間 → 整天都算
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const startMinutes = startTime.hour * 60 + startTime.minute;
+    if (nowMinutes < startMinutes) return false; // 還沒到開始時間
+    if (endTime) {
+      const endMinutes = endTime.hour * 60 + endTime.minute;
+      if (nowMinutes >= endMinutes) return false; // 已過結束時間
+    }
+    return true;
+  }
 
   // 系列賽還沒開始或已結束 → 一律不算進行中
   if (start && today < new Date(start.getFullYear(), start.getMonth(), start.getDate())) return false;
@@ -2212,14 +2244,16 @@ function isEventLive(ev, now) {
     // 比對今天是星期幾
     const dayMap = { '日':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6 };
     const targetDays = repeatDays.split(/[,，、]/).map(d => dayMap[d.trim()]).filter(d => d !== undefined);
-    return targetDays.includes(today.getDay());
+    if (!targetDays.includes(today.getDay())) return false;
+    return isNowInTimeRange();
   }
 
   // 單次賽事：開始日期 ≤ 今天 ≤ 結束日期
   if (!start) return false;
   const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
   const endDay = end ? new Date(end.getFullYear(), end.getMonth(), end.getDate()) : startDay;
-  return today >= startDay && today <= endDay;
+  if (today < startDay || today > endDay) return false;
+  return isNowInTimeRange();
 }
 
 // 賽事是否「即將到來」（今天之後、尚未過期）
@@ -2329,9 +2363,19 @@ function renderEventCard(ev, isTwFiltered) {
 
   // 日期處理
   let dateStr = '';
+  // 取出時間設定（用於顯示）
+  const startTimeVal = parseStartTime(ev['開始時間'] || '');
+  const endTimeVal = parseStartTime(ev['結束時間'] || '');
+  const timeRangeStr = startTimeVal
+    ? (endTimeVal
+        ? ` ${String(startTimeVal.hour).padStart(2,'0')}:${String(startTimeVal.minute).padStart(2,'0')}–${String(endTimeVal.hour).padStart(2,'0')}:${String(endTimeVal.minute).padStart(2,'0')}`
+        : ` ${String(startTimeVal.hour).padStart(2,'0')}:${String(startTimeVal.minute).padStart(2,'0')} 起`)
+    : '';
+
   if (repeatType === '固定星期' && repeatDays) {
     // 計算這週（或下週）符合星期幾的具體日期
     const dayMap = { '日':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6 };
+    const dayNameMap = { 0:'日', 1:'一', 2:'二', 3:'三', 4:'四', 5:'五', 6:'六' };
     const targetDays = repeatDays.split(/[,，、]/).map(d => dayMap[d.trim()]).filter(d => d !== undefined).sort();
 
     const now = new Date();
@@ -2345,11 +2389,19 @@ function renderEventCard(ev, isTwFiltered) {
       return date;
     }).sort((a, b) => a - b);
 
-    // 如果這週的日期都已過，往下一週
+    // 如果這週的日期都已過（含時間），往下一週
     const futureDates = dates.filter(d => {
       const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return day >= today;
+      if (day > today) return true;
+      if (day < today) return false;
+      // 今天：若有開始時間，看是否還沒到
+      if (startTimeVal) {
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        const startMinutes = startTimeVal.hour * 60 + startTimeVal.minute;
+        return nowMinutes < startMinutes; // 還沒開始才算「未來」
+      }
+      return true; // 今天沒設時間 → 算 future
     });
 
     const displayDates = futureDates.length > 0 ? futureDates : dates.map(d => {
@@ -2360,14 +2412,15 @@ function renderEventCard(ev, isTwFiltered) {
 
     if (displayDates.length === 1) {
       const d = displayDates[0];
-      dateStr = `${d.getMonth()+1}/${d.getDate()}（台灣時間）`;
+      dateStr = `${d.getMonth()+1}/${d.getDate()}（週${dayNameMap[d.getDay()]}）${timeRangeStr}（台灣時間）`;
     } else if (displayDates.length > 1) {
       const first = displayDates[0];
       const last = displayDates[displayDates.length - 1];
-      dateStr = `${first.getMonth()+1}/${first.getDate()} ～ ${last.getMonth()+1}/${last.getDate()}（台灣時間）`;
+      dateStr = `${first.getMonth()+1}/${first.getDate()} ～ ${last.getMonth()+1}/${last.getDate()}${timeRangeStr}（台灣時間）`;
     }
   } else {
     dateStr = formatDateRange(ev['開始日期'], ev['結束日期']);
+    if (timeRangeStr) dateStr = dateStr.replace('（台灣時間）', `${timeRangeStr}（台灣時間）`);
   }
 
   const detailSection = detail ? `
@@ -2433,15 +2486,13 @@ const FGC_GAMES = [
     'Street Fighter V',
     'Samurai Shodown',
     '2XKO',
-    'MARVEL TŌKON: Fighting Souls',
+    'Marvel Tōkon: Fighting Souls',
     'Dragon Ball FighterZ',
-    'UNDER NIGHT IN-BIRTH II Sys:Celes',
+    'Under Night In-Birth II Sys:Celes',
     'Melty Blood: Type Lumina',
     'Mortal Kombat 1',
     'MBlazBlue: Central Fiction',
     'Virtua Fighter 5 R.E.V.O.',
- 'Rivals of Aether II',
- 'Vampire Savior: The Lord of Vampire',
   ]},
 ];
 
@@ -3151,6 +3202,9 @@ async function loadHomeEvents() {
       ev['顯示'] !== false && ev['顯示'] !== 'FALSE' && ev['顯示'] !== 0
     );
 
+    // 快取供每分鐘檢查使用
+    window._cachedEvents = visible;
+
     // 現正進行中（自動依日期判斷）
     const liveEvs = visible.filter(ev => isEventLive(ev));
     const liveSection = document.getElementById('home-live-section');
@@ -3337,6 +3391,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 初始顯示最後更新時間
   updateLastUpdated();
+
+  // ── 每分鐘檢查是否有「固定時間」的賽事到了上架時間 ──
+  // 例如：每週六 22:00 自動上架變成「進行中」
+  function scheduleMinuteCheck() {
+    const now = new Date();
+    // 對齊下一個整分鐘
+    const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+    setTimeout(() => {
+      checkTimedEvents();
+      // 之後每分鐘重複
+      setInterval(checkTimedEvents, 60 * 1000);
+    }, msUntilNextMinute);
+  }
+
+  function checkTimedEvents() {
+    // 只在有「開始時間」設定的週期賽事存在時，才做完整 reload
+    // 這樣不用每分鐘都重抓 Sheets，效能比較好
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    // 快取已載入的賽事（若存在）
+    if (window._cachedEvents) {
+      const hadLive = window._cachedEvents.some(ev => isEventLive(ev, new Date(now.getTime() - 60000)));
+      const hasLive = window._cachedEvents.some(ev => isEventLive(ev, now));
+      // 若進行中狀態有變化，重新渲染（不重抓 Sheets）
+      if (hadLive !== hasLive) {
+        loadHomeEvents();
+        loadHeroThenLive();
+      }
+    }
+  }
+
+  scheduleMinuteCheck();
 });
 
 // ── PWA Service Worker 註冊 ──
