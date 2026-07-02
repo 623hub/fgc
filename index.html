@@ -2189,16 +2189,19 @@ function renderSharedUI() {
 // ════════════════════════════════════════════
 const SHEETS_ID = '1MBU9FQYsPqEwSgdAjmfxzOETK8vmBPY_JeNkP6vNgCw';
 
-// ── 解析「開始時間」欄位（支援 HH:MM 或 H:MM 格式）──
+// ── 解析「開始時間」欄位 ──
+// 支援：純文字 "22:00"、"9:30"，以及 gviz timeofday 陣列（parseSheet 已轉成字串）
 // 回傳 { hour, minute } 或 null
 function parseStartTime(timeStr) {
-  if (!timeStr) return null;
+  if (!timeStr && timeStr !== 0) return null;
   const s = String(timeStr).trim();
-  const match = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (!s) return null;
+  // 支援 H:MM 或 HH:MM（冒號可能是半形或全形）
+  const match = s.match(/^(\d{1,2})[：:](\d{2})/);
   if (!match) return null;
   const hour = parseInt(match[1], 10);
   const minute = parseInt(match[2], 10);
-  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
   return { hour, minute };
 }
 
@@ -2305,16 +2308,27 @@ function parseSheet(json) {
         obj[col] = '';
         return;
       }
-      // Google gviz 日期格式是 "Date(year,month,day)" — month 從 0 開始
       if (colTypes[i] === 'date' || colTypes[i] === 'datetime') {
+        // Google gviz 日期格式是 "Date(year,month,day)" — month 從 0 開始
         const match = String(cell.v).match(/Date\((\d+),(\d+),(\d+)/);
         if (match) {
           const y = parseInt(match[1]);
-          const m = parseInt(match[2]) + 1; // 轉成 1-based
+          const m = parseInt(match[2]) + 1;
           const d = parseInt(match[3]);
           obj[col] = new Date(y, m - 1, d);
         } else {
           obj[col] = new Date(cell.v);
+        }
+      } else if (colTypes[i] === 'timeofday') {
+        // gviz timeofday 值是 [hour, minute, second, millisecond] 陣列
+        // 轉成 "HH:MM" 字串讓 parseStartTime 可以正常解析
+        const v = cell.v;
+        if (Array.isArray(v) && v.length >= 2) {
+          const hh = String(v[0]).padStart(2, '0');
+          const mm = String(v[1]).padStart(2, '0');
+          obj[col] = hh + ':' + mm;
+        } else {
+          obj[col] = String(cell.v);
         }
       } else {
         obj[col] = cell.v;
