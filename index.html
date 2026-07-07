@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>623Hub — 台灣格鬥遊戲賽事與直播資訊</title>
+<title>623Hub — 台灣格鬥遊戲比賽與直播資訊整理</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0B1020">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -665,7 +665,7 @@
     border-radius: var(--radius);
     overflow: hidden;
     background: linear-gradient(135deg, #252d45);
-    border: 1px solid rgba(168,85,247,0.3);
+    border: 1px solid rgba(25,247,226,0.8);
     padding: 16px 18px;
     display: flex;
     align-items: center;
@@ -674,10 +674,10 @@
   }
   .banner-text {
     font-size: 13px;
-    color: #FFFFFF;
+    color: var(--text);
     line-height: 1.4;
   }
-  .banner-text strong { color: #FFFFFF; display: block; font-size: 14px; margin-bottom: 2px; font-weight: 700; }
+  .banner-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
   .banner-btn {
     padding: 7px 14px;
     background: transparent;
@@ -1464,12 +1464,15 @@
 
         <div class="guide-section">
           <div class="guide-section-title">這是什麼網站？</div>
-          <p>623Hub 是台灣格鬥遊戲社群的賽事與直播入口。我們整理台灣相關的格鬥遊戲比賽資訊與正在直播的實況主，讓你不用到處搜尋就能掌握社群動態。</p>
+          <p>623Hub 整理台灣格鬥遊戲圈的比賽資訊與實況直播。不管你想看比賽、找正在開台的玩家，或追蹤最近有哪些活動，都可以在這裡快速找到。</p>
         </div>
 
         <div class="guide-section">
           <div class="guide-section-title">格鬥遊戲是什麼？</div>
-          <p>格鬥遊戲通常是兩名玩家操控角色對戰的遊戲類型，強調反應速度、招式組合與心理博弈。常見作品有 Street Fighter（快打旋風）、Tekken（鐵拳）等，全球各地都有職業選手與比賽。</p>
+          <p>格鬥遊戲是一種兩位玩家互相對戰的遊戲。<br>  
+玩家需要操作角色移動、防禦、攻擊，並透過不同方向及按鍵組合使出特殊招式或連續技來擊敗對手。<br>
+除了手速與操作技巧之外，也很講究「預判對手下一步要做什麼」，因此常常被認為像是在進行高速的心理戰。<br>
+常見作品有 Street Fighter（快打旋風）、Tekken（鐵拳）、KOF(格鬥天王/拳皇) 等。</p>
         </div>
 
         <div class="guide-section">
@@ -1488,11 +1491,7 @@
           </div>
           <div class="guide-term">
             <strong>start.gg</strong>
-            <span>格鬥遊戲圈最常用的賽事報名與賽程查詢平台，許多比賽的詳細賽程都會放在這裡。</span>
-          </div>
-          <div class="guide-term">
-            <strong>Twitch / YouTube</strong>
-            <span>觀看直播的影音平台，本站收錄的實況主大多在這兩個平台開台。</span>
+            <span>格鬥遊戲圈最常用的賽事報名與賽程查詢平台，許多比賽的詳細賽程都會放在這裡，賽事沒有直播時也能用來看比賽進度和賽果。</span>
           </div>
         </div>
 
@@ -1918,7 +1917,7 @@ async function loadHero() {
       const officialContent = document.getElementById(`hero-official-content-${i}`);
       if (officialContent) {
         officialContent.innerHTML = `
-          <div class="hero-event-name">${evName}（官方主台）</div>
+          <div class="hero-event-name">${evName}</div>
           <div class="hero-sub">
             <span class="hero-live-badge">LIVE</span>
             目前無官方轉播
@@ -2017,7 +2016,7 @@ function refreshHeroContent(liveEvent) {
   const officialContent = document.getElementById(`hero-official-content-${idx}`);
   if (officialContent) {
     officialContent.innerHTML = `
-      <div class="hero-event-name">${name}（官方主台）</div>
+      <div class="hero-event-name">${name}</div>
       <div class="hero-sub"><span class="hero-live-badge">LIVE</span> 目前無官方轉播</div>
       <div class="hero-cta">
         ${scheduleUrl ? `<a href="${scheduleUrl}" target="_blank"><button class="btn-primary">賽事詳細 →</button></a>` : ''}
@@ -2062,15 +2061,23 @@ function renderBannerCarousel(containerId, slides) {
         <img class="banner-slide-img" src="${s['圖片網址']}" alt="${s['標題'] || ''}">
       </a>`;
     } else {
-      return `<a class="banner-slide ${isActive}" href="${href}" target="_blank" style="text-decoration:none;">
-        <div class="banner-slide-text">
-          <div class="banner-text-content">
-            <strong>${s['標題'] || ''}</strong>
-            ${s['說明文字'] || ''}
-          </div>
-          ${s['按鈕文字'] ? `<button class="banner-btn" onclick="event.preventDefault()">${s['按鈕文字']}</button>` : ''}
-        </div>
-      </a>`;
+      return `<div class="banner-slide ${isActive}">
+  <div class="banner-slide-text">
+
+    <div class="banner-text-content">
+      <strong>${s['標題'] || ''}</strong><br>
+      ${s['說明文字'] || ''}
+    </div>
+
+    ${s['按鈕文字']
+      ? `<a href="${href}" target="_blank" class="banner-btn">
+           ${s['按鈕文字']}
+         </a>`
+      : ''
+    }
+
+  </div>
+</div>`;
     }
   }).join('');
 
@@ -2187,12 +2194,12 @@ const SHEETS_ID = '1MBU9FQYsPqEwSgdAjmfxzOETK8vmBPY_JeNkP6vNgCw';
 function isEventLive(ev, now) {
   now = now || new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 今天 00:00
+  const todayEnd = new Date(today.getTime() + 24*60*60*1000 - 1); // 今天 23:59:59
 
   const start = ev['開始日期'] instanceof Date ? ev['開始日期'] : (ev['開始日期'] ? new Date(ev['開始日期']) : null);
   const end = ev['結束日期'] instanceof Date ? ev['結束日期'] : (ev['結束日期'] ? new Date(ev['結束日期']) : null);
   const repeatType = (ev['重複類型'] || '').trim();
-  const repeatDays = (ev['重複星期'] || '').trim();
-  const repeatTime = (ev['重複時間'] || '').trim(); // 例如「18:00」
+  const repeatDays = (ev['重複星期'] || '').trim(); // 例如「四」「六,日」
 
   // 系列賽還沒開始或已結束 → 一律不算進行中
   if (start && today < new Date(start.getFullYear(), start.getMonth(), start.getDate())) return false;
@@ -2202,20 +2209,10 @@ function isEventLive(ev, now) {
   }
 
   if (repeatType === '固定星期' && repeatDays) {
+    // 比對今天是星期幾
     const dayMap = { '日':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6 };
     const targetDays = repeatDays.split(/[,，、]/).map(d => dayMap[d.trim()]).filter(d => d !== undefined);
-    if (!targetDays.includes(today.getDay())) return false;
-
-    // 有設定開始時間，判斷現在是否已到開始時間
-    if (repeatTime) {
-      const parts = repeatTime.split(':');
-      const startHour = parseInt(parts[0]) || 0;
-      const startMin = parseInt(parts[1]) || 0;
-      const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin, 0);
-      const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-      return now >= startDateTime && now <= endDateTime;
-    }
-    return true;
+    return targetDays.includes(today.getDay());
   }
 
   // 單次賽事：開始日期 ≤ 今天 ≤ 結束日期
@@ -2336,7 +2333,6 @@ function renderEventCard(ev, isTwFiltered) {
     // 計算這週（或下週）符合星期幾的具體日期
     const dayMap = { '日':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6 };
     const targetDays = repeatDays.split(/[,，、]/).map(d => dayMap[d.trim()]).filter(d => d !== undefined).sort();
-    const repeatTime = (ev['重複時間'] || '').trim();
 
     const now = new Date();
     const todayNum = now.getDay();
@@ -2349,20 +2345,11 @@ function renderEventCard(ev, isTwFiltered) {
       return date;
     }).sort((a, b) => a - b);
 
-    // 如果這週的日期都已過（考慮時間），往下一週
+    // 如果這週的日期都已過，往下一週
     const futureDates = dates.filter(d => {
       const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      if (day > today) return true;
-      if (day < today) return false;
-      // 同一天：若有設定時間，看時間是否還沒過
-      if (repeatTime) {
-        const parts = repeatTime.split(':');
-        const startHour = parseInt(parts[0]) || 0;
-        const startMin = parseInt(parts[1]) || 0;
-        return now.getHours() < startHour || (now.getHours() === startHour && now.getMinutes() < startMin);
-      }
-      return true;
+      return day >= today;
     });
 
     const displayDates = futureDates.length > 0 ? futureDates : dates.map(d => {
@@ -2371,14 +2358,13 @@ function renderEventCard(ev, isTwFiltered) {
       return next;
     });
 
-    const timeStr = repeatTime ? ` ${repeatTime}` : '';
     if (displayDates.length === 1) {
       const d = displayDates[0];
-      dateStr = `${d.getMonth()+1}/${d.getDate()}${timeStr}（台灣時間）`;
+      dateStr = `${d.getMonth()+1}/${d.getDate()}（台灣時間）`;
     } else if (displayDates.length > 1) {
       const first = displayDates[0];
       const last = displayDates[displayDates.length - 1];
-      dateStr = `${first.getMonth()+1}/${first.getDate()} ～ ${last.getMonth()+1}/${last.getDate()}${timeStr}（台灣時間）`;
+      dateStr = `${first.getMonth()+1}/${first.getDate()} ～ ${last.getMonth()+1}/${last.getDate()}（台灣時間）`;
     }
   } else {
     dateStr = formatDateRange(ev['開始日期'], ev['結束日期']);
@@ -2447,11 +2433,15 @@ const FGC_GAMES = [
     'Street Fighter V',
     'Samurai Shodown',
     '2XKO',
-    'Marvel Tōkon: Fighting Souls',
+    'MARVEL TŌKON: Fighting Souls',
     'Dragon Ball FighterZ',
-    'Under Night In-Birth II Sys:Celes',
+    'UNDER NIGHT IN-BIRTH II Sys:Celes',
     'Melty Blood: Type Lumina',
     'Mortal Kombat 1',
+    'MBlazBlue: Central Fiction',
+    'Virtua Fighter 5 R.E.V.O.',
+ 'Rivals of Aether II',
+ 'Vampire Savior: The Lord of Vampire',
   ]},
 ];
 
@@ -2651,7 +2641,7 @@ function buildHeroTrack(liveEvents) {
     return `
       <div class="hero-slide${i === 0 ? ' active' : ''}" data-index="${i}">
         <div class="tabs" id="hero-tabs-${i}">
-          <div class="tab active" onclick="switchHeroTab(this,'hot',${i})">熱門直播</div>
+          <div class="tab active" onclick="switchHeroTab(this,'hot',${i})">共同觀賽</div>
           <div class="tab" onclick="switchHeroTab(this,'official',${i})">賽事主台</div>
         </div>
         <div class="hero hero-panel" id="hero-hot-${i}">
